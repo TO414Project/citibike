@@ -17,9 +17,7 @@ deduped.names_coor <- unique(names_coor)
 stations <- merge(start_station,end_station,by.x="Var1",by.y="Var1")
 stations_coor <- merge(stations,deduped.names_coor,by.x="Var1",by.y="bikesample.start.station.name")
 stations_coor$out_bike_ratio =stations_coor[,3]/stations_coor[,2]-1
-```
 
-```{r}
 #Import the related libraries
 if(!require('ggmap')){
   install.packages('ggmap', repos = "http://cran.us.r-project.org")
