@@ -1,0 +1,28 @@
+---
+title: "Bikesample"
+author: "Cassandra"
+date: "3/7/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is for creating a bikesample from the CitiBike data for January 2016 - September 2016.
+
+```{r}
+dataJan <- read.csv("201601-citibike-tripdata.csv")
+dataFeb <- read.csv("201602-citibike-tripdata.csv")
+dataMar <- read.csv("201603-citibike-tripdata.csv")
+dataApr <- read.csv("201604-citibike-tripdata.csv")
+dataMay <- read.csv("201605-citibike-tripdata.csv")
+dataJun <- read.csv("201606-citibike-tripdata.csv")
+dataJul <- read.csv("201607-citibike-tripdata.csv")
+dataAug <- read.csv("201608-citibike-tripdata.csv")
+dataSep <- read.csv("201609-citibike-tripdata.csv")
+
+bike <- rbind(dataJan,dataFeb,dataMar,dataApr,dataMay,dataJun,dataJul,dataAug,dataSep)
+bikesample <- bike[sample(nrow(bike), nrow(bike)*0.01), ]
+write.csv(bikesample, file = "Sample_Citibike_Data.csv",row.names=FALSE)
+```
