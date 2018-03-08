@@ -1,0 +1,168 @@
+---
+title: "Project 1"
+author: "Cassandra"
+date: "2/17/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+install.packages("tidyverse")
+install.packages("dplyr")
+install.packages("rwunderground")
+install.packages("gpgplot")
+install.packages("geosphere")
+install.packages("lubridate")
+install.packages("chron")
+
+bikes <- read.csv("Sample_Citibike_Data.csv")
+```
+
+#Question 1
+
+Explore the dataset to calculate descriptive statistics. Do exploratory visualization to better understand the dataset.
+
+```{r}
+bikes$age <- 2016-bikes$birth.year
+summary(bikes$age) #not sure how to remove na's
+
+#separating ages into different groups, specified in comments above
+age1 <- subset(bikes, age <= 20) #1190 observations
+age2 <- subset(bikes, age >= 21 & age <= 30) #26185 observations
+age3 <- subset(bikes, age >= 31 & age <= 40) #28984 observations
+age4 <- subset(bikes, age >= 41 & age <= 50) #17732 observations
+age5 <- subset(bikes, age >= 51 & age <= 60) #11626 observations
+age6 <- subset(bikes, age >= 61 & age <= 70) #3539 observations
+age7 <- subset(bikes, age >= 71 & age <= 80) #466 observations
+age8 <- subset(bikes, age >= 81) #48 observations, some of these ages are reaaaaally large though, max age is 131...
+
+ageTeens <- age1
+ageYoungProfessionals <- age2
+ageAdults <- merge(age3, age4, all = TRUE)
+ageAdults <- merge(ageAdults, age5, all = TRUE)
+ageSeniors <- merge(age6, age7, all = TRUE)
+ageSeniors <- merge(ageSeniors, age8, all = TRUE)
+
+boxplot(age1$tripduration, age2$tripduration, main = "Teens vs. Young Adults Trip Duration", ylab = "Trip Duration (Seconds)", names = c("Teens", "Young Adults"), outline=FALSE) 
+
+boxplot(age1$tripduration, age8$tripduration, main = "Teens vs. Seniors Trip Duration", ylab = "Trip Duration (Seconds)", names = c("Teens", "Seniors"), outline=FALSE) 
+
+ageTeens$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageTeens$start.station.longitude, ageTeens$start.station.latitude, ageTeens$end.station.longitude, ageTeens$end.station.latitude) #to find distances of all bike trips 
+
+ageYoungProfessionals$distance <- ageYoungProfessionals$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageYoungProfessionals$start.station.longitude, ageYoungProfessionals$start.station.latitude, ageYoungProfessionals$end.station.longitude, ageYoungProfessionals$end.station.latitude) #to find distances of all bike trips 
+
+ageAdults$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageAdults$start.station.longitude, ageAdults$start.station.latitude, ageAdults$end.station.longitude, ageAdults$end.station.latitude)
+
+ageSeniors$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageSeniors$start.station.longitude, ageSeniors$start.station.latitude, ageSeniors$end.station.longitude, ageSeniors$end.station.latitude)
+
+boxplot(ageTeens$distance, ageYoungProfessionals$distance, ageAdults$distance, ageSeniors$distance,  main = "Teens, Young Professionals, Adults, and Seniors Trip Distance", ylab = "Trip Distance (Meters)", names = c("Teens", "Young Professionals", "Adults", "Seniors"), outline = FALSE) 
+
+#getting average speed of the trip by doing sped = distance (meters) / time (second)
+ageTeens$speed <- ageTeens$distance / ageTeens$tripduration #unit is meters per second
+ageYoungProfessionals$speed <- ageYoungProfessionals$distance / ageYoungProfessionals$tripduration
+ageAdults$speed <- ageAdults$distance / ageAdults$tripduration
+ageSeniors$speed <- ageSeniors$distance / ageSeniors$tripduration
+
+boxplot(ageTeens$speed, ageYoungProfessionals$speed, ageAdults$speed, ageSeniors$speed,  main = "Teens, Young Professionals, Adults, and Seniors Trip Speed", ylab = "Speed (meters / second)", names = c("Teens", "Young Professionals", "Adults", "Seniors"), outline = FALSE) 
+
+avgSpeedTeens <- mean(ageTeens$speed, na.rm= TRUE) 
+avgSpeedTeens
+
+avgSpeedYoungProfessionals <- mean(ageYoungProfessionals$speed, na.rm = TRUE)
+avgSpeedYoungProfessionals
+
+avgSpeedAdults <- mean(ageAdults$speed, na.rm = TRUE)
+avgSpeedAdults
+
+avgSpeedSeniors <- mean(ageSeniors$speed, na.rm = TRUE)
+avgSpeedSeniors
+
+bikes$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), bikesample$start.station.longitude, bikesample$start.station.latitude, bikesample$end.station.longitude, bikesample$end.station.latitude)
+
+bikesAgeSort <- bikes[order(bikes$age),] 
+
+# Create Line Chart
+
+# convert factor to numeric for convenience 
+bikesAgeSort$age <- as.numeric(bikesAgeSort$age) 
+nage <- max(bikesAgeSort$age, na.rm=TRUE)
+
+str(bikesAgeSort)
+# get the range for the x and y axis 
+xrange <- range(bikesAgeSort$age, na.rm = TRUE) 
+yrange <- range(bikesAgeSort$distance, na.rm = TRUE) 
+
+# set up the plot 
+plot(xrange, yrange, type="n", xlab="Age", ylab="Distance (meters)") 
+colors <- rainbow(nage) 
+linetype <- c(1:nage) 
+plotchar <- seq(18,18+nage,1)
+
+# add lines 
+for (i in 1:nage) { 
+  ages <- subset(bikesAgeSort, age==i) 
+  lines(bikesAgeSort$age, bikesAgeSort$distance, type="b", lwd=1.5,
+    lty=linetype[i], col=colors[i], pch=plotchar[i]) 
+} 
+
+# add a title and subtitle 
+title("Tree Growth", "example of line plot")
+
+# add a legend 
+legend(xrange[1], yrange[2], 1:ntrees, cex=0.8, col=colors,
+  	pch=plotchar, lty=linetype, title="Tree")
+
+
+View(ageTeens)
+str(ageTeens)
+
+#SOME PEOPLE RETURN THEIR BIKES TO THE SAME PLACE THEY BORROWED THE BIKE FROM SO THE DISTANCE IS 0 - NO WAY TO CALCULATE
+
+#speed = distance / time
+
+#NEED TO DO:
+#convert starttime and stoptime into POSITwhatever 
+#take the difference between the two to find the total time on the citibike
+
+View(ageTeens)
+
+
+
+View(bikes)
+#john = github guy
+#this project will be graded out of github repo
+
+#make a separate rmd file that makes a sample csv (5% or something), and then at the end 
+#assume that what happens in the 5% will hold for the 100%
+#finish the project by EoD friday!!!!!!!!!!!!!! and then use saturday/sunday to write up the report
+#good project is the project that goes deep into interpreting what the data means
+#subscribers = native, no = tourists
+#look at how people behave with weather data
+#do different age groups behave differently with weather?
+
+```
+
+
+#Question 2
+
+Identify patterns in the ride history data. Explain/illustrate these patterns using appropriate visualization.
+
+```{r}
+
+
+
+
+```
+
+
+#Question 3
+
+Assymetric Traffic: Stations running out of bikes because of assymetric traffic (arrivals and departures are not equal) is a big problem. Client would want to know which stations are candidates for increasing bike storage capacity. Client would like to see these stations on a map based visualization.
+
+#Question 4
+
+Impact of Weather. Client wants to know the impact of weather (temperature, rain, snow, wind) on the CitiBike system. 
+```{r}
+#linear regression, tempearture as y, behavior as x
+```
