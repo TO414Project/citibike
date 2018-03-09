@@ -112,6 +112,12 @@ plot1
 #plot2 shows the speeds that people travel visually separated by age. You can see that seniors (people over 61) are clearly traveling at lower speeds than young professionals (people between 21 and 30).
 plot2 <- ggplot() + geom_jitter(aes(y = bikesample$speed, x = bikesample$age, colour = bikesample$ageID), data = bikesample, stat="identity")
 plot2
+
+model1 = lm(bikesample$distance ~ bikesample$speed)
+plot(x = bikesample$speed, y = bikesample$distance)
+abline(model1)
+summary(model1)
+
 ```
 
 Next, we wanted to look at if there were some times where more people of the same age group (ex. teenagers) came out to bike compared to other times of the day. 
@@ -120,12 +126,87 @@ Next, we wanted to look at if there were some times where more people of the sam
 #Show the amount of teenagers per each time... how to do?? line graph? NEEDS TO BE COMPLETED
 
 ageTeens$starttime <- as.POSIXlt(ageTeens$starttime, tz = "", "%m/%d/%Y %H:%M:%OS", optional = FALSE)
-ageTeens$stoptime <- as.POSIXlt(ageTeens$starttime, tz = "", "%m/%d/%Y %H:%M:%OS", optional = FALSE)
+ageTeens$stoptime <- as.POSIXlt(ageTeens$stoptime, tz = "", "%m/%d/%Y %H:%M:%OS", optional = FALSE)
 
 ageTeens$month <- month(ageTeens$starttime) #helps with seasons
 ageTeens$hour <- hour(ageTeens$starttime) #helps with time of day
 ageTeens$hour <- ifelse((minute(ageTeens$starttime) > 30), ageTeens$hour+0.5, ageTeens$hour)
 
+numTeensHours <- seq(from = 0, to = 23.5, by = 0.5)
+numTeensHoursAt <- numeric(length(numTeensHours))
+for(i in 1:length(numTeensHours)) {
+  numTeensHoursAt[i] = length(which(ageTeens$hour == numTeensHours[i])) 
+}
+
+numTeensHours$numHours <- as.data.frame(numTeensHours)
+numTeensHoursAt <- as.data.frame(numTeensHoursAt)
+teens <- cbind(numTeensHours, numTeensHoursAt)
+
+ggplot(data = teens, aes(x=numTeensHours, y=numTeensHoursAt)) + geom_line() + geom_smooth()
+cat("This is a line graph showing how many teens (under 20) were riding citibikes at each half hour of the day.")
+
+ageYoungAdults$starttime <- as.POSIXlt(ageYoungAdults$starttime, tz = "", "%m/%d/%Y %H:%M:%OS", optional = FALSE)
+ageYoungAdults$stoptime <- as.POSIXlt(ageYoungAdults$stoptime, tz = "", "%m/%d/%Y %H:%M:%OS", optional = FALSE)
+
+ageYoungAdults$month <- month(ageYoungAdults$starttime) #helps with seasons
+ageYoungAdults$hour <- hour(ageYoungAdults$starttime) #helps with time of day
+ageYoungAdults$hour <- ifelse((minute(ageYoungAdults$starttime) > 30), ageYoungAdults$hour+0.5, ageYoungAdults$hour)
+
+numYoungAdultHours <- seq(from = 0, to = 23.5, by = 0.5)
+numYoungAdultHoursAt <- numeric(length(numYoungAdultHours))
+for(i in 1:length(numYoungAdultHours)) {
+  numYoungAdultHoursAt[i] = length(which(ageYoungAdults$hour == numYoungAdultHours[i])) 
+}
+
+numYoungAdultHours$numHours <- as.data.frame(numYoungAdultHours)
+numYoungAdultHoursAt <- as.data.frame(numYoungAdultHoursAt)
+youngAdults <- cbind(numYoungAdultHours, numYoungAdultHoursAt)
+
+ggplot(data = youngAdults, aes(x=numYoungAdultHours, y=numYoungAdultHoursAt)) + geom_line() + geom_smooth()
+cat("This is a line graph showing how many young adults were riding citibikes at each half hour of the day.")
+
+ageAdults$starttime <- as.POSIXlt(ageAdults$starttime, tz = "", "%m/%d/%Y %H:%M:%OS", optional = FALSE)
+ageAdults$stoptime <- as.POSIXlt(ageAdults$stoptime, tz = "", "%m/%d/%Y %H:%M:%OS", optional = FALSE)
+
+ageAdults$month <- month(ageAdults$starttime) #helps with seasons
+ageAdults$hour <- hour(ageAdults$starttime) #helps with time of day
+ageAdults$hour <- ifelse((minute(ageAdults$starttime) > 30), ageAdults$hour+0.5, ageAdults$hour)
+
+numAdultHours <- seq(from = 0, to = 23.5, by = 0.5)
+numAdultHoursAt <- numeric(length(numAdultHours))
+for(i in 1:length(numAdultHours)) {
+  numAdultHoursAt[i] = length(which(ageAdults$hour == numAdultHours[i])) 
+}
+
+numAdultHours$numHours <- as.data.frame(numAdultHours)
+numAdultHoursAt <- as.data.frame(numAdultHoursAt)
+adults <- cbind(numAdultHours, numAdultHoursAt)
+
+ggplot(data = adults, aes(x=numAdultHours, y=numAdultHoursAt)) + geom_line() + geom_smooth()
+cat("This is a line graph showing how many adults were riding citibikes at each half hour of the day.")
+
+ageSeniors$starttime <- as.POSIXlt(ageSeniors$starttime, tz = "", "%m/%d/%Y %H:%M:%OS", optional = FALSE)
+ageSeniors$stoptime <- as.POSIXlt(ageSeniors$stoptime, tz = "", "%m/%d/%Y %H:%M:%OS", optional = FALSE)
+
+ageSeniors$month <- month(ageSeniors$starttime) #helps with seasons
+ageSeniors$hour <- hour(ageSeniors$starttime) #helps with time of day
+ageSeniors$hour <- ifelse((minute(ageSeniors$starttime) > 30), ageSeniors$hour+0.5, ageSeniors$hour)
+
+numSeniorHours <- seq(from = 0, to = 23.5, by = 0.5)
+numSeniorHoursAt <- numeric(length(numSeniorHours))
+for(i in 1:length(numSeniorHours)) {
+  numSeniorHoursAt[i] = length(which(ageSeniors$hour == numSeniorHours[i])) 
+}
+
+numSeniorHours$numHours <- as.data.frame(numSeniorHours)
+numSeniorHoursAt <- as.data.frame(numSeniorHoursAt)
+seniors <- cbind(numSeniorHours, numSeniorHoursAt)
+
+ggplot(data = seniors, aes(x=numSeniorHours, y=numSeniorHoursAt)) + geom_line() + geom_smooth()
+cat("This is a line graph showing how many seniors were riding citibikes at each half hour of the day.")
+```
+
+```{r}
 #gender and speed FOR NATASHA'S PART
 genderM <- subset(bikesample, gender == 1)
 genderF <- subset(bikesample, gender == 2)
@@ -148,8 +229,7 @@ summary(genderF$speed)
 
 #tourists and age -- natives have subscription, tourists don't -- are more tourists of a particular age group? FIX THE BELOW
 
-#numJanTeens <- sum(which(ageTeens$hour == 0))
-#plot(x = ageTeens$hour, y = numJanTeens, type = "n")
+
 ```
 
 ```{r}
