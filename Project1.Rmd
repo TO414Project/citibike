@@ -8,7 +8,16 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-bikes <- read.csv("Sample_Citibike_Data.csv")
+library(tidyverse)
+library(dplyr)
+library(rwunderground)
+library(geosphere)
+library(lubridate)
+library(chron)
+library(ggplot2)
+library(ggthemes)
+
+bikesample <- read.csv("Sample_Citibike_Data.csv")
 ```
 
 #Question 1
@@ -16,122 +25,7 @@ bikes <- read.csv("Sample_Citibike_Data.csv")
 Explore the dataset to calculate descriptive statistics. Do exploratory visualization to better understand the dataset.
 
 ```{r}
-bikes$age <- 2016-bikes$birth.year
-summary(bikes$age) #not sure how to remove na's
 
-#separating ages into different groups, specified in comments above
-age1 <- subset(bikes, age <= 20) #1190 observations
-age2 <- subset(bikes, age >= 21 & age <= 30) #26185 observations
-age3 <- subset(bikes, age >= 31 & age <= 40) #28984 observations
-age4 <- subset(bikes, age >= 41 & age <= 50) #17732 observations
-age5 <- subset(bikes, age >= 51 & age <= 60) #11626 observations
-age6 <- subset(bikes, age >= 61 & age <= 70) #3539 observations
-age7 <- subset(bikes, age >= 71 & age <= 80) #466 observations
-age8 <- subset(bikes, age >= 81) #48 observations, some of these ages are reaaaaally large though, max age is 131...
-
-ageTeens <- age1
-ageYoungProfessionals <- age2
-ageAdults <- merge(age3, age4, all = TRUE)
-ageAdults <- merge(ageAdults, age5, all = TRUE)
-ageSeniors <- merge(age6, age7, all = TRUE)
-ageSeniors <- merge(ageSeniors, age8, all = TRUE)
-
-boxplot(age1$tripduration, age2$tripduration, main = "Teens vs. Young Adults Trip Duration", ylab = "Trip Duration (Seconds)", names = c("Teens", "Young Adults"), outline=FALSE) 
-
-boxplot(age1$tripduration, age8$tripduration, main = "Teens vs. Seniors Trip Duration", ylab = "Trip Duration (Seconds)", names = c("Teens", "Seniors"), outline=FALSE) 
-
-ageTeens$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageTeens$start.station.longitude, ageTeens$start.station.latitude, ageTeens$end.station.longitude, ageTeens$end.station.latitude) #to find distances of all bike trips 
-
-ageYoungProfessionals$distance <- ageYoungProfessionals$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageYoungProfessionals$start.station.longitude, ageYoungProfessionals$start.station.latitude, ageYoungProfessionals$end.station.longitude, ageYoungProfessionals$end.station.latitude) #to find distances of all bike trips 
-
-ageAdults$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageAdults$start.station.longitude, ageAdults$start.station.latitude, ageAdults$end.station.longitude, ageAdults$end.station.latitude)
-
-ageSeniors$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageSeniors$start.station.longitude, ageSeniors$start.station.latitude, ageSeniors$end.station.longitude, ageSeniors$end.station.latitude)
-
-boxplot(ageTeens$distance, ageYoungProfessionals$distance, ageAdults$distance, ageSeniors$distance,  main = "Teens, Young Professionals, Adults, and Seniors Trip Distance", ylab = "Trip Distance (Meters)", names = c("Teens", "Young Professionals", "Adults", "Seniors"), outline = FALSE) 
-
-#getting average speed of the trip by doing sped = distance (meters) / time (second)
-ageTeens$speed <- ageTeens$distance / ageTeens$tripduration #unit is meters per second
-ageYoungProfessionals$speed <- ageYoungProfessionals$distance / ageYoungProfessionals$tripduration
-ageAdults$speed <- ageAdults$distance / ageAdults$tripduration
-ageSeniors$speed <- ageSeniors$distance / ageSeniors$tripduration
-
-boxplot(ageTeens$speed, ageYoungProfessionals$speed, ageAdults$speed, ageSeniors$speed,  main = "Teens, Young Professionals, Adults, and Seniors Trip Speed", ylab = "Speed (meters / second)", names = c("Teens", "Young Professionals", "Adults", "Seniors"), outline = FALSE) 
-
-avgSpeedTeens <- mean(ageTeens$speed, na.rm= TRUE) 
-avgSpeedTeens
-
-avgSpeedYoungProfessionals <- mean(ageYoungProfessionals$speed, na.rm = TRUE)
-avgSpeedYoungProfessionals
-
-avgSpeedAdults <- mean(ageAdults$speed, na.rm = TRUE)
-avgSpeedAdults
-
-avgSpeedSeniors <- mean(ageSeniors$speed, na.rm = TRUE)
-avgSpeedSeniors
-
-bikes$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), bikesample$start.station.longitude, bikesample$start.station.latitude, bikesample$end.station.longitude, bikesample$end.station.latitude)
-
-bikesAgeSort <- bikes[order(bikes$age),] 
-
-# Create Line Chart
-
-# convert factor to numeric for convenience 
-bikesAgeSort$age <- as.numeric(bikesAgeSort$age) 
-nage <- max(bikesAgeSort$age, na.rm=TRUE)
-
-str(bikesAgeSort)
-# get the range for the x and y axis 
-xrange <- range(bikesAgeSort$age, na.rm = TRUE) 
-yrange <- range(bikesAgeSort$distance, na.rm = TRUE) 
-
-# set up the plot 
-plot(xrange, yrange, type="n", xlab="Age", ylab="Distance (meters)") 
-colors <- rainbow(nage) 
-linetype <- c(1:nage) 
-plotchar <- seq(18,18+nage,1)
-
-# add lines 
-for (i in 1:nage) { 
-  ages <- subset(bikesAgeSort, age==i) 
-  lines(bikesAgeSort$age, bikesAgeSort$distance, type="b", lwd=1.5,
-    lty=linetype[i], col=colors[i], pch=plotchar[i]) 
-} 
-
-# add a title and subtitle 
-title("Tree Growth", "example of line plot")
-
-# add a legend 
-legend(xrange[1], yrange[2], 1:ntrees, cex=0.8, col=colors,
-  	pch=plotchar, lty=linetype, title="Tree")
-
-
-View(ageTeens)
-str(ageTeens)
-
-#SOME PEOPLE RETURN THEIR BIKES TO THE SAME PLACE THEY BORROWED THE BIKE FROM SO THE DISTANCE IS 0 - NO WAY TO CALCULATE
-
-#speed = distance / time
-
-#NEED TO DO:
-#convert starttime and stoptime into POSITwhatever 
-#take the difference between the two to find the total time on the citibike
-
-View(ageTeens)
-
-
-
-View(bikes)
-#john = github guy
-#this project will be graded out of github repo
-
-#make a separate rmd file that makes a sample csv (5% or something), and then at the end 
-#assume that what happens in the 5% will hold for the 100%
-#finish the project by EoD friday!!!!!!!!!!!!!! and then use saturday/sunday to write up the report
-#good project is the project that goes deep into interpreting what the data means
-#subscribers = native, no = tourists
-#look at how people behave with weather data
-#do different age groups behave differently with weather?
 
 ```
 
@@ -140,29 +34,160 @@ View(bikes)
 
 Identify patterns in the ride history data. Explain/illustrate these patterns using appropriate visualization.
 
+Some ride history patterns we looked at have to do with the age of CitiBike users. 
 ```{r}
+bikesample$age <- 2016-bikesample$birth.year
+summary(bikesample$age)
 
+#separating ages into different groups, specified in comments above
+age1 <- subset(bikesample, age <= 20) #1190 observations
+age2 <- subset(bikesample, age >= 21 & age <= 30) #26185 observations
+age3 <- subset(bikesample, age >= 31 & age <= 40) #28984 observations
+age4 <- subset(bikesample, age >= 41 & age <= 50) #17732 observations
+age5 <- subset(bikesample, age >= 51 & age <= 60) #11626 observations
+age6 <- subset(bikesample, age >= 61 & age <= 70) #3539 observations
+age7 <- subset(bikesample, age >= 71 & age <= 80) #466 observations
+age8 <- subset(bikesample, age >= 81) #48 observations, some of these ages are reaaaaally large though, max age is 131
 
+ageTeens <- age1
+ageYoungAdults <- age2
+ageAdults <- merge(age3, age4, all = TRUE)
+ageAdults <- merge(ageAdults, age5, all = TRUE)
+ageSeniors <- merge(age6, age7, all = TRUE)
+ageSeniors <- merge(ageSeniors, age8, all = TRUE)
 
-
+boxplot(ageTeens$tripduration, ageYoungAdults$tripduration, ageAdults$tripduration, ageSeniors$tripduration, main = "Trip Duration", ylab = "Trip Duration (Seconds)", names = c("Teens", "Young Adults", "Adults", "Seniors"), outline=FALSE) 
+summary(ageAdults$tripduration)
+summary(ageYoungAdults$tripduration)
 ```
 
+These boxplots show that the median trip duration in seconds was the lowest for teenagers (bikers less than or equal to 20 years old) and the highest for seniors (bikers at least 61 years old). This prompted the question of why seniors took so much more time biking than younger people, so we compared biking distances and speeds for the four groups as well.
+
+```{r}
+ageTeens$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageTeens$start.station.longitude, ageTeens$start.station.latitude, ageTeens$end.station.longitude, ageTeens$end.station.latitude) #to find distances of all bike trips 
+
+ageYoungAdults$distance <- ageYoungAdults$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageYoungAdults$start.station.longitude, ageYoungAdults$start.station.latitude, ageYoungAdults$end.station.longitude, ageYoungAdults$end.station.latitude) #to find distances of all bike trips 
+
+ageAdults$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageAdults$start.station.longitude, ageAdults$start.station.latitude, ageAdults$end.station.longitude, ageAdults$end.station.latitude)
+
+ageSeniors$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageSeniors$start.station.longitude, ageSeniors$start.station.latitude, ageSeniors$end.station.longitude, ageSeniors$end.station.latitude)
+
+boxplot(ageTeens$distance, ageYoungAdults$distance, ageAdults$distance, ageSeniors$distance,  main = "Trip Distance", ylab = "Trip Distance (Meters)", names = c("Teens", "Young Adults", "Adults", "Seniors"), outline = FALSE) 
+``` 
+
+While analyzing the data provided for distance, we noticed that some distances were showing up as 0, even though the time duration was positive. This means that the start location and end location were the same, and it wasn't possible to gauge the distance that the biker had actually traveled. 
+
+Regardless, these boxplots show that, despite the trip distance in meters was the lowest for teenagers (which makes sense as they have the lowest trip duration as well). However, although seniors had the highest trip duration, they have the second lowest trip distance. Thus, we came to the conclusion that we should look at speed as well. 
+
+```{r}
+#getting average speed of the trip by doing sped = distance (meters) / time (second)
+ageTeens$speed <- ageTeens$distance / ageTeens$tripduration #unit is meters per second
+ageYoungAdults$speed <- ageYoungAdults$distance / ageYoungAdults$tripduration
+ageAdults$speed <- ageAdults$distance / ageAdults$tripduration
+ageSeniors$speed <- ageSeniors$distance / ageSeniors$tripduration
+
+boxplot(ageTeens$speed, ageYoungAdults$speed, ageAdults$speed, ageSeniors$speed,  main = "Trip Speed", ylab = "Speed (meters / second)", names = c("Teens", "Young Adults", "Adults", "Seniors"), outline = FALSE) 
+
+summary(ageTeens$speed)
+summary(ageYoungAdults$speed)
+summary(ageAdults$speed)
+summary(ageSeniors$speed)
+```
+
+To get speed, we used the speed formula (speed = distance / time). Here, we can see that senior bikers were indeed biking at lower speeds than their younger counterparts. Compared to young adults, who were on average biking the fastest out of all the age groups, seniors were biking approximately 0.376 m/s slower. Additionally, we now see that young adults are biking at the fastest average speed, which explains why even though they have the highest trip distance, they don't have the highest trip duration.
+
+Delving deeper into the data extracted above, we wanted to visually see the distances that bikers traveled separated by age, as well as the speeds that bikers traveled at separated by age, both of which can be seen in the plots below:
+
+```{r}
+bikesample$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), bikesample$start.station.longitude, bikesample$start.station.latitude, bikesample$end.station.longitude, bikesample$end.station.latitude)
+
+bikesample$speed <- bikesample$distance / bikesample$tripduration
+
+bikesample$ageID <- ifelse(bikesample$age <= 20, 1, ifelse(bikesample$age >= 21 & bikesample$age <= 30, 2, ifelse(bikesample$age >= 31 & bikesample$age <= 60, 3, 4)))
+
+#plot1 shows the distances that people travel visually separated by age. 
+plot1 <- ggplot() + geom_jitter(aes(y = bikesample$distance, x = bikesample$age, colour = bikesample$ageID), data = bikesample, stat="identity")
+plot1
+
+#plot2 shows the speeds that people travel visually separated by age. You can see that seniors (people over 61) are clearly traveling at lower speeds than young professionals (people between 21 and 30).
+plot2 <- ggplot() + geom_jitter(aes(y = bikesample$speed, x = bikesample$age, colour = bikesample$ageID), data = bikesample, stat="identity")
+plot2
+```
+
+Next, we wanted to look at if there were some times where more people of the same age group (ex. teenagers) came out to bike compared to other times of the day. 
+
+```{r}
+#Show the amount of teenagers per each time... how to do?? line graph? NEEDS TO BE COMPLETED
+
+ageTeens$starttime <- as.POSIXlt(ageTeens$starttime, tz = "", "%m/%d/%Y %H:%M:%OS", optional = FALSE)
+ageTeens$stoptime <- as.POSIXlt(ageTeens$starttime, tz = "", "%m/%d/%Y %H:%M:%OS", optional = FALSE)
+
+ageTeens$month <- month(ageTeens$starttime) #helps with seasons
+ageTeens$hour <- hour(ageTeens$starttime) #helps with time of day
+ageTeens$hour <- ifelse((minute(ageTeens$starttime) > 30), ageTeens$hour+0.5, ageTeens$hour)
+
+#gender and speed FOR NATASHA'S PART
+genderM <- subset(bikesample, gender == 1)
+genderF <- subset(bikesample, gender == 2)
+
+genderM$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), genderM$start.station.longitude, genderM$start.station.latitude, genderM$end.station.longitude, genderM$end.station.latitude) 
+
+genderF$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), genderF$start.station.longitude, genderF$start.station.latitude, genderF$end.station.longitude, genderF$end.station.latitude) 
+
+genderM$speed <- genderM$distance / genderM$tripduration
+genderF$speed <- genderF$distance / genderF$tripduration
+
+boxplot(genderM$speed, genderF$speed,  main = "Trip Speed by Gender", ylab = "Speed (meters / second)", names = c("Male", "Female"), outline = FALSE) 
+
+summary(genderM$speed)
+summary(genderF$speed)
+
+#other possible questions:
+#seasons affect which age groups use citibike the most? NATASHA'S CODE HAS SEASONS - CAN USE THAT
+#show what times are most popular for teens, young professionals, adults, and seniors to ride (respectively)
+
+#tourists and age -- natives have subscription, tourists don't -- are more tourists of a particular age group? FIX THE BELOW
+
+#numJanTeens <- sum(which(ageTeens$hour == 0))
+#plot(x = ageTeens$hour, y = numJanTeens, type = "n")
+```
+
+```{r}
+#standard deviation - NATASHA
+subscribers <- subset(bikesample, usertype == "Subscriber")
+
+subsAvgDuration <- mean(subscribers$tripduration, na.rm=TRUE)
+subsAvgDurationMin <- subsAvgDuration / 60
+
+subsDurationSD <- sd(subscribers$tripduration, na.rm = TRUE)
+subsDurationSDMin <- subsDurationSD / 60
+
+subsAvgDurationMin
+subsDurationSDMin
+
+
+sd(subsAvgDurationMin)
+
+plot(x=subscribers$tripduration, outline=FALSE)
+
+plot(x=subscribers$tripduration, ylim=c(0,1e+04))
+```
 
 #Question 3
 
 Assymetric Traffic: Stations running out of bikes because of assymetric traffic (arrivals and departures are not equal) is a big problem. Client would want to know which stations are candidates for increasing bike storage capacity. Client would like to see these stations on a map based visualization.
 ```{r}
 #Extract the numbers of leaves and arrivals from the data set 
-start_station <- as.data.frame(table(bikes$start.station.name))
-end_station <- as.data.frame(table(bikes$end.station.name))
+start_station <- as.data.frame(table(bikesample$start.station.name))
+end_station <- as.data.frame(table(bikesample$end.station.name))
 
 #Extract the location of stations from the data set and omit the repeaded lines
-names_coor <- data.frame(bikes$start.station.name,bikes$start.station.latitude,bikes$start.station.longitude)
+names_coor <- data.frame(bikesample$start.station.name, bikesample$start.station.latitude, bikesample$start.station.longitude) 
 deduped.names_coor <- unique(names_coor)
 
 #Combine the data frames together and calculate the out-bike ratio
 stations <- merge(start_station,end_station,by.x="Var1",by.y="Var1")
-stations_coor <- merge(stations,deduped.names_coor,by.x="Var1",by.y="bikes.start.station.name")
+stations_coor <- merge(stations,deduped.names_coor,by.x="Var1",by.y="bikesample.start.station.name")
 stations_coor$out_bike_ratio =stations_coor[,3]/stations_coor[,2]-1
 
 #Import the related libraries
@@ -183,7 +208,7 @@ stations_coor_selected <- stations_coor[stations_coor$out_bike_ratio>0.2,]
 map <- get_googlemap(center = c(lon = -73.97, lat = 40.73), zoom = 12,size = c(640, 640))
 
 #plot the selected bike stations onto the google map and displace the points' color according to the degree that the staion is running out of bikes
-ggmap(map)+geom_point(data = stations_coor_selected, aes(x = bikes.start.station.longitude, y = bikes.start.station.latitude,fill = out_bike_ratio), size = 2, shape = 21,show.legend = TRUE) + scale_fill_gradient(low = "#0000FF", high = "#FF0000")
+ggmap(map)+geom_point(data = stations_coor_selected, aes(x = bikesample.start.station.longitude, y = bikesample.start.station.latitude,fill = out_bike_ratio), size = 2, shape = 21,show.legend = TRUE) + scale_fill_gradient(low = "#0000FF", high = "#FF0000")
 
 #Print the names
 print(stations_coor_selected[,1])
