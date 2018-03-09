@@ -1,0 +1,36 @@
+---
+title: "just season"
+author: "Natasha"
+date: "March 8, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+bikesample$startHours <- as.POSIXlt(bikesample$starttime, format = "%m/%d/%Y %H:%M")$hour
+bikesample$date <- as.Date(bikesample$starttime, "%m/%d/%Y %H:%M")
+bikesample$weekday <- weekdays(as.Date(bikesample$date))
+bikesample$Month <- format(bikesample$date,"%m")
+bikesample$Month = as.numeric(as.character(bikesample$Month))
+bikesample$Season<-ifelse(bikesample$Month == 1,"Winter",
+		ifelse(bikesample$Month== 2,"Winter",
+		ifelse(bikesample$Month== 3,"Spring", 
+		ifelse(bikesample$Month== 4,"Spring",
+		ifelse(bikesample$Month== 5,"Spring",
+		ifelse(bikesample$Month== 6,"Summer",
+		ifelse(bikesample$Month== 7,"Summer",
+		ifelse(bikesample$Month== 8,"Summer","Fall"))))))))
+
+spring= length(which(bikesample$Season=="Spring"))/3
+summer= length(which(bikesample$Season=="Summer"))/3
+winter= length(which(bikesample$Season=="Winter"))/2
+fall= length(which(bikesample$Season=="Fall"))
+
+J = c(fall, winter, spring, summer)
+barplot(J, main="Number of Bikes Used per Season on Average", xlab= "Season",col=c("red","darkblue", "green", "yellow"), ylab="Number of riders", names.arg = c("Fall", "Winter", "Spring", "Summer")) 
+#From the seasonal analysis conducted for number of riders, it can be seen that winter has the lowest number of bikes used. Since the the bikes have already been purchased, unused bikes represent lost revenue. Consequnetly, Citi may want to conisder offering greater promotions in the winter or investing in winter bike wheels to promote which could lead to more people considering bikes a vaiable option even in the colder months. Furthermore, Fall and Summer seem to have greater bike usage so pricing higher in these seasons may help Citi make up for loses in the winter. 
+```
+
