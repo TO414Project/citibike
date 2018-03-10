@@ -1,0 +1,57 @@
+---
+title: "Gender Project 1"
+author: "Natasha"
+date: "March 9, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#What is the proportion of Male and Female riders? (76:24)
+
+malecount= length(which(bikesample$gender==1)) #number of male riders
+femalecount= length(which(bikesample$gender==2)) #number of female riders
+malepercent= malecount/(malecount+femalecount) #proporation of male riders who use citi bike
+femalepercent= femalecount/(malecount+femalecount) ##proporation of female riders who use citi bike
+slices <- c(malecount, femalecount)
+lbls <- c("Male Riders", "Female Riders")
+pct <- round(slices/sum(slices)*100)
+lbls <- paste(lbls, pct) 
+lbls <- paste(lbls,"%",sep="") 
+colors= c("blue", "pink")
+pie(slices,labels = lbls, col= colors ,main="Gender Breakdown of Citi Bikes")
+
+#Due to such low female ridership, we looked into two possible causes. First, we looked into time of day females tend to use bikes to see if safety may be an issue. 
+femaletime=  subset(bikesample, gender == 2)
+femaletime$startHours <- as.POSIXlt(femaletime$starttime, format = "%m/%d/%Y %H:%M")$hour
+barplot(table(femaletime$startHours), ylab = "Number of Female Rides over an Entire Year", xlab = "Hour of Departure", col= "pink")
+title("Number of Monthly Female Riders by Hour of Departure")
+#The peak hours of bike usage by women are 8:00 AM and 5:00-6:00 PM indicating that women seem to be using the bikes of commuting. 
+
+maletime=  subset(bikesample, gender == 1)
+maletime$startHours <- as.POSIXlt(maletime$starttime, format = "%m/%d/%Y %H:%M")$hour
+barplot(table(maletime$startHours), ylab = "Number of Male Rides over an Entire Year", xlab = "Hour of Departure", col= "blue")
+title("Number of Monthly Male Riders by Hour of Departure")
+#The peak hours for bike usage by men are the same as women indicating that men are allso using bikes for commuting. 
+
+#Since the bike usage by both genders are so similar with bike usage dropping off for both late into the night, time of the day in regards to safety does not seem to be a major issue for why women are using the bikes less than men. However, safety of riding on busy streets may be a determinant resulting in less women using bikes in the first place. Citi bike may want to look into creating more protected bike lanes along with releasing bike driving statistics about safety to convince more women to try the bikes. 
+```
+
+```{r}
+#Next, we looked into the day of week women tend to use bikes to see if women use the bikes primarily for commuting or for a different reason more on the weekends. 
+
+bikesample$weekday <- weekdays(as.Date(bikes$date))
+bikesample$weekday <- ordered(bikesample$weekday, levels = c("Sunday","Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+femaleday= subset(bikesample, gender==2)
+barplot(table(femaleday$weekday), ylab = "Number of Monthly Female Riders by Day of Week", xlab ="Day", col= "pink")
+title("Number of Monthly Citibike Riders by Day")
+#Bike riding is highest during the five work days indicating that job commuting may be the reason women are using the bikes most. We then decided to check male ridership per day to see if there was a greater contrast between weekdays vs. weekends for men compared to women.
+
+maleday= subset(bikesample, gender==1)
+barplot(table(maleday$weekday), ylab = "Number of Monthly Male Riders by Day of Week", xlab ="Day", col= "blue")
+title("Number of Monthly Citibike Riders by Day")
+# This graph compared to the female graph shows a greater difference from weekday riding versus weekend riding. On the male graph, the gap when looking at Sunday (6000) compared to Monday (10000) is 4000. The difference when looking at the female rider graph at Sunday (2500) compared to Monday (3000) is 500. This reveals the possibility that overall there are more male riders who are choosing bike transportation for commuting as opposed women. Women may be looking into other transportation options. Consequently, Citi Bike may want to consider highlighting more pros of their bike service that appeal to women to help steal share from other transportation options. 
+```
