@@ -21,26 +21,33 @@ library(gridExtra)
 bikesample <- read.csv("Sample_Citibike_Data.csv")
 ```
 
-Our team at TO414 Consultants Group took time to analyze CitiBike data from Jan 2016 to Sep 2016. The following report outlines major bike ridership patterns in respect to several variables, including gender, age groups, seasons, and weather data. 
+Our team at TO414 Consultants Group analyzed CitiBike data from Jan 2016 to Sep 2016. The following report outlines major bike ridership patterns in respect to several variables, including gender, age groups, seasons, and weather data. 
 
-#Question 1
+To start, we have provided some descriptive statistics below to give a general sense of who Citi Bike riders are in terms of demographic data and ride characteristic data.
 
-Explore the dataset to calculate descriptive statistics. Do exploratory visualization to better understand the dataset.
-
-Here, we have provided summary of the riders' trip duration in minutes, their age, gender proportions, and the most popular starting and ending bike stations. 
+Demographic Data: 
 ```{r, code_folding: hide}
-#tripduration
-bikesample$minutes <- bikesample$tripduration / 60
-print(summary(bikesample$minutes))
+malecount= length(which(bikesample$gender==1)) #number of male riders
+femalecount= length(which(bikesample$gender==2)) #number of female riders
+malepercent= malecount/(malecount+femalecount) #proporation of male riders who use citi bike
+femalepercent= femalecount/(malecount+femalecount) ##proporation of female riders who use citi bike
+
+cat("The number of male riders is", malecount, ", and the number of female riders is", femalecount, ". With these numbers we can calculate the proportion of male riders who use CitiBikes, which is", malepercent, ", and the proportion of female riders who use CitiBikes, which is", femalepercent, ".")
 
 #age
 bikesample$age <- 2016-bikesample$birth.year
 summary(bikesample$age)
 ```
-
-We also looked deeper at age data to better understand CitiBike riders. First, we separated ages into different groups. We have classified riders 20 years old or under as Teens, riders 21 to 30 years old as Young Adults, riders 31 to 60 as Adults, and riders over 61 and Seniors. 
+Ride Characteristic Data: 
 
 ```{r}
+
+
+#tripduration
+bikesample$minutes <- bikesample$tripduration / 60
+print(summary(bikesample$minutes))
+
+
 #separating ages into different groups, specified in comments above
 age1 <- subset(bikesample, age <= 20) #1190 observations
 age2 <- subset(bikesample, age >= 21 & age <= 30) #26185 observations
@@ -59,13 +66,13 @@ ageSeniors <- merge(age6, age7, all = TRUE)
 ageSeniors <- merge(ageSeniors, age8, all = TRUE)
 ```
 
-We first looked at how trip duration varied for the different age groups. 
+To develop an even stronger understanding of Citi Bike riders, we separated ages into different groups. We have classified riders 20 years old or under as Teens, riders 21 to 30 years old as Young Adults, riders 31 to 60 as Adults, and riders over 61 and Seniors. We first looked at how trip duration varied for the different age groups. 
 
 ```{r}
 boxplot(ageTeens$tripduration, ageYoungAdults$tripduration, ageAdults$tripduration, ageSeniors$tripduration, main = "Trip Duration", ylab = "Trip Duration (Seconds)", names = c("Teens", "Young Adults", "Adults", "Seniors"), outline=FALSE) 
 ```
 
-These boxplots show that the median trip duration in seconds was the lowest for Teens and the highest for Seniors. This prompted the discussion for  comparing biking distances and speeds for the age groups. 
+These boxplots show that the median trip duration in seconds was the lowest for Teens and the highest for Seniors. From the trip duration finding across different age groups, we decided to compare trip distances for the groups. 
 
 ```{r}
 ageTeens$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageTeens$start.station.longitude, ageTeens$start.station.latitude, ageTeens$end.station.longitude, ageTeens$end.station.latitude) 
@@ -79,9 +86,9 @@ ageSeniors$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1
 boxplot(ageTeens$distance, ageYoungAdults$distance, ageAdults$distance, ageSeniors$distance,  main = "Trip Distance", ylab = "Trip Distance (Meters)", names = c("Teens", "Young Adults", "Adults", "Seniors"), outline = FALSE) 
 ``` 
 
-While analyzing the data provided for distance, we noticed that some distances were showing up as 0, even though the time duration was positive. This means that the start location and end location were the same, and it wasn't possible to gauge the distance that the biker had actually traveled. 
+While analyzing the data provided for distance, we noticed that some distances were showing up as 0, even though the time duration was positive. This means that the start location and end location were the same, and it wasn't possible to gauge the distance that the biker had actually traveled. Consequently, we did data cleaning to remove the entries with 0. 
 
-Regardless, these boxplots show that the trip distance in meters was the lowest for Teens (which makes sense as they have the lowest trip duration as well). However, although seniors had the highest trip duration, they have the second lowest trip distance. Thus, we came to the conclusion that we should look at speed as well. To get speed, we used the speed formula (speed = distance / time).
+These boxplots show that the trip distance in meters was the lowest for Teens (which makes sense as they have the lowest trip duration as well). However, although seniors had the highest trip duration, they have the second lowest trip distance. Thus, we have also compared speeds for the different groups. To get speed, we used the speed formula (speed = distance / time).
 
 ```{r}
 #getting average speed of the trip by doing sped = distance (meters) / time (second)
@@ -98,7 +105,7 @@ summary(ageAdults$speed)
 summary(ageSeniors$speed)
 ```
 
-Here, we can see that senior bikers were indeed biking at lower speeds than their younger counterparts. Compared to young adults, who were on average biking the fastest out of all the age groups, seniors were biking approximately 0.376 m/s slower. Additionally, we now see that young adults are biking at the fastest average speed, which explains why even though they have the highest trip distance, they don't have the highest trip duration.
+The data output revels senior bikers bike at lower speeds than their younger counterparts. Compared to young adults, who were on average biking the fastest out of all the age groups, seniors were biking approximately 0.376 m/s slower. Additionally, young adults are biking at the fastest average speed, which explains why even though they have the highest trip distance, they don't have the highest trip duration.
 
 We performed the same calculations to see how speed varied between males and females. 
 
@@ -116,7 +123,7 @@ genderF$speed <- genderF$distance / genderF$tripduration
 boxplot(genderM$speed, genderF$speed,  main = "Trip Speed by Gender", ylab = "Speed (meters / second)", names = c("Male", "Female"), outline = FALSE) 
 ```
 
-Delving deeper into the data extracted above, we wanted to visually see the distances that bikers traveled separated by age, as well as the speeds that bikers traveled at separated by age, both of which can be seen in the plots below. The first plot shows the distances riders travel visually separated by age, and the second plot shows that the speeds riders travel at visually separated by age. Seniors are clearly traveling at lower speeds than young adults. Citi bike will be able to use the speed data if they are experiencing bike safety issues to assess if user speed may be an issue, particularly for the teen demographic that goes the fastest.
+Delving deeper into the data extracted above, we have created data visualizations showcasing the distances that bikers traveled separated by age, as well as the speeds that bikers traveled at separated by age, both of which can be seen in the plots below. The first plot shows the distances riders travel visually separated by age, and the second plot shows that the speeds riders travel at visually separated by age. Seniors are clearly traveling at lower speeds than young adults. You will be able to use the speed data if you are experiencing bike safety issues to assess if user speed may be an issue, particularly for the teen demographic that goes the fastest.
 
 ```{r}
 bikesample$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), bikesample$start.station.longitude, bikesample$start.station.latitude, bikesample$end.station.longitude, bikesample$end.station.latitude)
@@ -132,7 +139,7 @@ plot2 <- ggplot() + geom_jitter(aes(y = bikesample$speed, x = bikesample$age, co
 plot2
 ```
 
-Next, we wanted to look at if there were some times where more people of the same age group (ex. teenagers) came out to bike compared to other times of the day. These graphs show the different times that Teens, Young Adults, Adults, and Seniors often use CitiBike. 
+Next, we looked at if there were some times where more people of the same age group (ex. teenagers) came out to bike compared to other times of the day. These graphs show the different times that Teens, Young Adults, Adults, and Seniors often use CitiBike. 
 
 ```{r}
 ageTeens$starttime <- as.POSIXlt(ageTeens$starttime, tz = "", "%m/%d/%Y %H:%M:%OS", optional = FALSE)
@@ -222,21 +229,11 @@ seniorsPlot <- ggplot(data = seniors, aes(x=numSeniorHours, y=numSeniorHoursAt))
 grid.arrange(teensPlot, youngAdultsPlot, adultsPlot, seniorsPlot)
 ```
 
-Next, we looked at gender proportions in the data.
-
-```{r}
-malecount= length(which(bikesample$gender==1)) #number of male riders
-femalecount= length(which(bikesample$gender==2)) #number of female riders
-malepercent= malecount/(malecount+femalecount) #proporation of male riders who use citi bike
-femalepercent= femalecount/(malecount+femalecount) ##proporation of female riders who use citi bike
-
-cat("The number of male riders is", malecount, ", and the number of female riders is", femalecount, ". With these numbers we can calculate the proportion of male riders who use CitiBikes, which is", malepercent, ", and the proportion of female riders who use CitiBikes, which is", femalepercent, ".")
-```
-
-Lastly, we wanted to see where the most popular stations riders went to for either starting or ending their trip, which could help us develop a marketing plan to increase ridership for CitiBikes when all the above data is also taken into account. The following map shows the top 20 stations riders go to. 
+Lastly, we have identified the most popular stations riders went to for either starting or ending their trip for reference. The following map shows the top 20 stations riders go to which are primarily clusters at left-to-center Manhattan area.
 
 
-The top20 polpular citibike stations:
+
+The top 20 popular citibike stations:
 ```{r}
 #Extract the numbers of leaves and arrivals from the data set 
 start_station <- as.data.frame(table(bikesample$start.station.name))
@@ -258,14 +255,10 @@ map1 <- get_googlemap(center = c(lon = -73.989, lat = 40.74), zoom = 13,size = c
 #plot the selected bike stations onto the google map and displace the points' color according to the degree that the staion is running out of bikes
 ggmap(map1)+geom_point(data = popular_stations , aes(x = bikesample.start.station.longitude, y = bikesample.start.station.latitude), size = 4, shape = 21,fill="Blue") 
 ```
-#Conlcusion and recommendation:As we can see from the map above, the most popular 20 citibike stations are clusters at left-to-center Manhattan area.
 
+One of the most daunting findings from the descriptive statistics is the lack of female ridership. We looked into two potential causes: safety and not using the bikes for commuting. 
 
-#Question 2
-
-Identify patterns in the ride history data. Explain/illustrate these patterns using appropriate visualization.
-
-First, we delved into looking at gender data. We wanted to know what the proportion of Male and Female riders was. 
+Below is a Pie Chart showcasing the proportion of male to female riders. 
 ```{r}
 malecount= length(which(bikesample$gender==1)) #number of male riders
 femalecount= length(which(bikesample$gender==2)) #number of female riders
@@ -279,8 +272,6 @@ lbls <- paste(lbls,"%",sep="")
 colors= c("blue", "pink")
 pie(slices,labels = lbls, col= colors ,main="Gender Breakdown of Citi Bikes")
 ```
-
-Due to such low female ridership, we looked into two possible causes. First, we looked into time of day females tend to use bikes to see if safety may be an issue. 
 
 ```{r}
 femaletime=  subset(bikesample, gender == 2)
@@ -322,7 +313,7 @@ This graph compared to the female graph shows a greater difference from weekday 
 
 Consequently, Citi Bike may want to consider highlighting more pros of their bike service that appeal to women to help steal share from other transportation options. 
 
-Additionally, we conducted seasonal analysis foor number of riders. It can be seen that winter has the lowest number of bikes used. Since the the bikes have already been purchased, unused bikes represent lost revenue. Consequnetly, Citi may want to conisder offering greater promotions in the winter or investing in winter bike wheels to promote which could lead to more people considering bikes a vaiable option even in the colder months. Furthermore, Fall and Summer seem to have greater bike usage so pricing higher in these seasons may help Citi make up for loses in the winter. 
+Additionally, we conducted seasonal analysis for number of riders. It can be seen that winter has the lowest number of bikes used. Since the the bikes have already been purchased, unused bikes represent lost revenue. Consequnetly, Citi may want to conisder offering greater promotions in the winter or investing in winter bike wheels to promote which could lead to more people considering bikes a vaiable option even in the colder months. Furthermore, Fall and Summer seem to have greater bike usage so pricing higher in these seasons may help Citi make up for loses in the winter. 
 
 ```{r}
 bikesample$startHours <- as.POSIXlt(bikesample$starttime, format = "%m/%d/%Y %H:%M")$hour
@@ -377,6 +368,46 @@ test_stations = bikesgender[bikesgender$bikesample.start.station.id %in% names(g
 
 mapPoints = x + geom_point(aes(y=bikesample.start.station.latitude, x =bikesample.start.station.longitude), data = y, size= 5, colour = "Blue") + scale_fill_hue(l=70, c=35) + geom_point(aes(y=bikesample.start.station.latitude, x =bikesample.start.station.longitude), data = test_stations, size=5, colour = "Red") + scale_fill_hue(l=70, c=35)
 mapPoints
+```
+
+In order to provide recommendations for areas to advertise based on demographic age data, we analyzed the median age at each start station. Through this analysis, we found that the bike stations in Northern Manhattan and Eastern Brooklyn (shown by the salmon dots) have a high young median age. The majority group of ages 30-40 and 40-50 are spread out everywhere. Additionally, there is not a distinct elderly used station. In total, there is the biggest opportunity to target the youngest demographic that distinctly lies highly in the Northern Manhattan and Eastern Brooklyn area. 
+```{r}
+bikesbyage_age = subset(bikesample, is.na(bikesample$age)!= TRUE)
+
+
+bikesbyage_age_by_station = aggregate(bikesbyage_age$age, list(bikesbyage_age$start.station.name), median)
+
+bikesbyage_coordinates_lat = aggregate(bikesbyage_age$start.station.latitude, list(bikesbyage_age$start.station.name), median)
+
+bikesbyage_coordinates_long = aggregate(bikesbyage_age$start.station.longitude, list(bikesbyage_age$start.station.name), median)
+
+
+bikesbyage_age_by_station = merge(bikesbyage_age_by_station, bikesbyage_coordinates_lat, by = "Group.1")
+
+bikesbyage_age_by_station = merge(bikesbyage_age_by_station, bikesbyage_coordinates_long, by = 'Group.1')
+
+names(bikesbyage_age_by_station) = c('Station_name', 'Median_age', 'Lat', 'Long')
+bikesbyage_age_by_station$age_group[bikesbyage_age_by_station$Median_age <= 30] = "18-30"
+
+bikesbyage_age_by_station$age_group[bikesbyage_age_by_station$Median_age <= 40 & bikesbyage_age_by_station$Median_age>30] = "30-40"
+
+bikesbyage_age_by_station$age_group[bikesbyage_age_by_station$Median_age <= 50 & bikesbyage_age_by_station$Median_age>40] = "40-50"
+
+bikesbyage_age_by_station$age_group[bikesbyage_age_by_station$Median_age <= 60 & bikesbyage_age_by_station$Median_age>50] = "50-60"
+
+bikesbyage_age_by_station$age_group[ bikesbyage_age_by_station$Median_age>60] = "60+"
+
+
+
+map3 <- get_map(location = 'Lower Manhattan', zoom =12)
+
+
+plotted_map3 <- ggmap(map3) + geom_point(aes(x=Long, y=Lat, colour = age_group), data = bikesbyage_age_by_station, alpha = .7, size = .9, show.legend = TRUE)
+
+
+plotted_map3
+
+
 ```
 
 #Question 3
