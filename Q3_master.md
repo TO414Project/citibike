@@ -1,10 +1,11 @@
 
+Read the csv file into R:
 ```{r}
-bikesample <- read.csv("bikesample.csv")
+bikesample <- read.csv("bikesamplelarge.csv")
 ```
 
+Import the related libraries:
 ```{r}
-#Import the related libraries
 if(!require('ggmap')){
   install.packages('ggmap', repos = "http://cran.us.r-project.org")
   library(ggmap)
@@ -40,8 +41,11 @@ map1 <- get_googlemap(center = c(lon = -73.989, lat = 40.74), zoom = 13,size = c
 ggmap(map1)+geom_point(data = popular_stations , aes(x = bikesample.start.station.longitude, y = bikesample.start.station.latitude), size = 4, shape = 21,fill="Blue") 
 ```
 
+#Conlcusion and recommendation:As we can see from the map above, the most popular 20 citibike stations are clusters at left-to-center Manhattan area.
+
+
 ### Question 3
-In order to figure out the assymetric traffic faced by citibike and make recommendations on bike addition in current satations or new station addition, we are going to look at the level of assymetry in terms of both percentages and absolute values
+#In order to figure out the assymetric traffic faced by citibike and make recommendations on bike addition in current satations or new station addition, we are going to look at the level of assymetry in terms of both percentages and absolute values:
 
 a) assymetry in terms of percentages
 ```{r}
@@ -53,6 +57,7 @@ stations_coor <- stations_coor[order(stations_coor$bike_shortage_ratio),]
 
 pct_surplus_stations <- stations_coor[1:30,]
 pct_shortage_stations <- stations_coor[(nrow(stations_coor)-29):nrow(stations_coor),]
+
 pct_selected_stations <- rbind(pct_surplus_stations,pct_shortage_stations)
 
 #plot the google map in R
@@ -72,17 +77,28 @@ The top 30 citibike stations in terms of bike shortage percentage that might nee
 print(pct_shortage_stations[,1])
 ```
 
+#Conlcusion and recommendation:
+#Areas in upper Manhattan and Brooklyn are demonstating a bike shortage. Those could be areas that citibike company can increase bike capacity to current stations or set up new bike stations in neighbour streets. 
+
 
 b) assymetry in terms of absolute surplus and shortage
 ```{r}
+
 stations_coor <- stations_coor[order(stations_coor$shortage),]
 stations_coor$Surplus_Shortage <- ifelse(stations_coor$shortage>0,"Shortage","Surplus")
 
 #Top 50 stations with shortages and surpluses
-abs_surplus_stations<- head(stations_coor, n=50)
-abs_shortage_stations <- tail(stations_coor, n =50)
+abs_surplus_stations<- head(stations_coor, n=70)
+abs_shortage_stations <- tail(stations_coor, n =70)
 abs_selected_stations <- rbind(abs_surplus_stations, abs_shortage_stations)
 
-map3 <- get_googlemap(center = c(lon = -73.97, lat = 40.73), zoom = 13,size = c(640, 640))
+
+map3 <- get_googlemap(center = c(lon = -73.97, lat = 40.73), zoom = 12,size = c(640, 640))
 ggmap(map3) + geom_point(aes(x = bikesample.start.station.longitude, y = bikesample.start.station.latitude), colour = ifelse(abs_selected_stations$Surplus=="Surplus",'navyblue','red3'), data = abs_selected_stations, size = 3,alpha = .5, show.legend = FALSE)
 ```
+
+#Conlcusion and recommendation:
+#By exploring the absolute surplus and shortage, we figured out the stations that need capacity expansion the most.
+#The blue dots show the satations are running a bike surplus and the red dots are in bike shortage. We can see the pattern that people in Manhattan are moving from the edge (especially the right edge) to the center.
+#We recommend to add bikes to those current stations / set up new bike stations in neighbour streets at the edge of Manhattan and add empty docks at the left-to-center side of Manhattan.
+
