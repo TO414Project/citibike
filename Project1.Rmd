@@ -235,6 +235,8 @@ cat("The number of male riders is", malecount, ", and the number of female rider
 
 Lastly, we wanted to see where the most popular stations riders went to for either starting or ending their trip, which could help us develop a marketing plan to increase ridership for CitiBikes when all the above data is also taken into account. The following map shows the top 20 stations riders go to. 
 
+
+The top20 polpular citibike stations:
 ```{r}
 #Extract the numbers of leaves and arrivals from the data set 
 start_station <- as.data.frame(table(bikesample$start.station.name))
@@ -256,6 +258,8 @@ map1 <- get_googlemap(center = c(lon = -73.989, lat = 40.74), zoom = 13,size = c
 #plot the selected bike stations onto the google map and displace the points' color according to the degree that the staion is running out of bikes
 ggmap(map1)+geom_point(data = popular_stations , aes(x = bikesample.start.station.longitude, y = bikesample.start.station.latitude), size = 4, shape = 21,fill="Blue") 
 ```
+#Conlcusion and recommendation:As we can see from the map above, the most popular 20 citibike stations are clusters at left-to-center Manhattan area.
+
 
 #Question 2
 
@@ -378,43 +382,49 @@ mapPoints
 #Question 3
 
 Assymetric Traffic: Stations running out of bikes because of assymetric traffic (arrivals and departures are not equal) is a big problem. Client would want to know which stations are candidates for increasing bike storage capacity. Client would like to see these stations on a map based visualization.
+
+#In order to figure out the assymetric traffic faced by citibike and make recommendations on bike addition in current satations or new station addition, we are going to look at the level of assymetry in terms of both percentages and absolute values:
+
+a) assymetry in terms of percentages
 ```{r}
-#Extract the numbers of leaves and arrivals from the data set 
-start_station <- as.data.frame(table(bikesample$start.station.name))
-end_station <- as.data.frame(table(bikesample$end.station.name))
-
-#Extract the location of stations from the data set and omit the repeaded lines
-names_coor <- data.frame(bikesample$start.station.name, bikesample$start.station.latitude, bikesample$start.station.longitude) 
-deduped.names_coor <- unique(names_coor)
-
-#Combine the data frames together and calculate the out-bike ratio
-stations <- merge(start_station,end_station,by.x="Var1",by.y="Var1")
-stations_coor <- merge(stations,deduped.names_coor,by.x="Var1",by.y="bikesample.start.station.name")
-stations_coor$out_bike_ratio =stations_coor[,3]/stations_coor[,2]-1
-
-#Import the related libraries
-if(!require('ggmap')){
-  install.packages('ggmap', repos = "http://cran.us.r-project.org")
-  library(ggmap)
-}
-
-if(!require('ggplot2')){
-  install.packages('ggplot2', repos = "http://cran.us.r-project.org")
-  library(ggplot2)
-}
-
 #select the stations to plot
-stations_coor_selected <- stations_coor[stations_coor$out_bike_ratio>0.2,]
+stations_coor$shortage <- stations_coor$Freq.x-stations_coor$Freq.y
+stations_coor$bike_shortage_ratio =stations_coor[,7]/stations_coor[,6]
+stations_coor <- stations_coor[order(stations_coor$bike_shortage_ratio),]
+
+pct_surplus_stations <- stations_coor[1:30,]
+pct_shortage_stations <- stations_coor[(nrow(stations_coor)-29):nrow(stations_coor),]
+pct_selected_stations <- rbind(pct_surplus_stations,pct_shortage_stations)
 
 #plot the google map in R
-map <- get_googlemap(center = c(lon = -73.97, lat = 40.73), zoom = 12,size = c(640, 640))
-
-#plot the selected bike stations onto the google map and displace the points' color according to the degree that the staion is running out of bikes
-ggmap(map)+geom_point(data = stations_coor_selected, aes(x = bikesample.start.station.longitude, y = bikesample.start.station.latitude,fill = out_bike_ratio), size = 2, shape = 21,show.legend = TRUE) + scale_fill_gradient(low = "#0000FF", high = "#FF0000")
-
-#Print the names
-print(stations_coor_selected[,1])
+map2 <- get_googlemap(center = c(lon = -73.97, lat = 40.73), zoom = 12,size = c(640, 640))
+ggmap(map2)+geom_point(data = pct_selected_stations , aes(x = bikesample.start.station.longitude, y = bikesample.start.station.latitude,fill = bike_shortage_ratio), size = 2, shape = 21,show.legend = TRUE) + scale_fill_gradient(low = "#0000FF", high = "#FF0000")
 ```
+The top 30 citibike stations in terms of bike surplus percentage that might need to add more docks are the followings:
+```{r}
+print(pct_surplus_stations[,1])
+```
+The top 30 citibike stations in terms of bike shortage percentage that might need to add more bikes are the followings:
+```{r}
+print(pct_shortage_stations[,1])
+```
+#Conlcusion and recommendation: #Areas in upper Manhattan and Brooklyn are demonstating a bike shortage. Those could be areas that citibike company can increase bike capacity to current stations or set up new bike stations in neighbour streets.
+
+b) assymetry in terms of absolute surplus and shortage
+```{r}
+stations_coor <- stations_coor[order(stations_coor$shortage),]
+stations_coor$Surplus_Shortage <- ifelse(stations_coor$shortage>0,"Shortage","Surplus")
+
+#Top 70 stations with shortages and surpluses
+abs_surplus_stations<- head(stations_coor, n=70)
+abs_shortage_stations <- tail(stations_coor, n =70)
+abs_selected_stations <- rbind(abs_surplus_stations, abs_shortage_stations)
+
+map3 <- get_googlemap(center = c(lon = -73.97, lat = 40.73), zoom = 12,size = c(640, 640))
+ggmap(map3) + geom_point(aes(x = bikesample.start.station.longitude, y = bikesample.start.station.latitude), colour = ifelse(abs_selected_stations$Surplus=="Surplus",'navyblue','red3'), data = abs_selected_stations, size = 3,alpha = .5, show.legend = FALSE)
+```
+
+#Conlcusion and recommendation: #By exploring the absolute surplus and shortage, we figured out the stations that need capacity expansion the most. #The blue dots show the satations are running a bike surplus and the red dots are in bike shortage. We can see the pattern that people in Manhattan are moving from the edge (especially the right edge) to the center. #We recommend to add bikes to those current stations / set up new bike stations in neighbour streets at the edge of Manhattan and add empty docks at the left-to-center side of Manhattan.
 
 
 #Question 4
