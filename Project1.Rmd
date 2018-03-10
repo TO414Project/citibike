@@ -1,6 +1,6 @@
 ---
 title: "Project 1"
-author: "Cassandra"
+author: "TO 414 Group 7 - Dingan Chen, Natasha Desai, Michael Tang, Cassandra Wong, Yan (Lucy) Xie"
 date: "2/17/2018"
 output: html_document
 ---
@@ -26,7 +26,7 @@ Our team at TO414 Consultants Group analyzed CitiBike data from Jan 2016 to Sep 
 To start, we have provided some descriptive statistics below to give a general sense of who Citi Bike riders are in terms of demographic data and ride characteristic data.
 
 Demographic Data: 
-```{r, code_folding: hide}
+```{r}
 malecount= length(which(bikesample$gender==1)) #number of male riders
 femalecount= length(which(bikesample$gender==2)) #number of female riders
 malepercent= malecount/(malecount+femalecount) #proporation of male riders who use citi bike
@@ -38,11 +38,10 @@ cat("The number of male riders is", malecount, ", and the number of female rider
 bikesample$age <- 2016-bikesample$birth.year
 summary(bikesample$age)
 ```
+
 Ride Characteristic Data: 
 
 ```{r}
-
-
 #tripduration
 bikesample$minutes <- bikesample$tripduration / 60
 print(summary(bikesample$minutes))
@@ -64,26 +63,37 @@ ageAdults <- merge(age3, age4, all = TRUE)
 ageAdults <- merge(ageAdults, age5, all = TRUE)
 ageSeniors <- merge(age6, age7, all = TRUE)
 ageSeniors <- merge(ageSeniors, age8, all = TRUE)
+
+#data cleaning to remove trip durations that are 0
+ageTeensClean <- ageTeens[which(ageTeens$tripduration > 0),]
+ageYoungAdultsClean <- ageYoungAdults[which(ageYoungAdults$tripduration > 0),]
+ageAdultsClean <- ageAdults[which(ageAdults$tripduration > 0),]
+ageSeniorsClean <- ageSeniors[which(ageSeniors$tripduration > 0),]
 ```
 
 To develop an even stronger understanding of Citi Bike riders, we separated ages into different groups. We have classified riders 20 years old or under as Teens, riders 21 to 30 years old as Young Adults, riders 31 to 60 as Adults, and riders over 61 and Seniors. We first looked at how trip duration varied for the different age groups. 
 
 ```{r}
-boxplot(ageTeens$tripduration, ageYoungAdults$tripduration, ageAdults$tripduration, ageSeniors$tripduration, main = "Trip Duration", ylab = "Trip Duration (Seconds)", names = c("Teens", "Young Adults", "Adults", "Seniors"), outline=FALSE) 
+boxplot(ageTeensClean$tripduration, ageYoungAdultsClean$tripduration, ageAdultsClean$tripduration, ageSeniorsClean$tripduration, main = "Trip Duration", ylab = "Trip Duration (Seconds)", names = c("Teens", "Young Adults", "Adults", "Seniors"), outline=FALSE) 
 ```
 
 These boxplots show that the median trip duration in seconds was the lowest for Teens and the highest for Seniors. From the trip duration finding across different age groups, we decided to compare trip distances for the groups. 
 
 ```{r}
-ageTeens$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageTeens$start.station.longitude, ageTeens$start.station.latitude, ageTeens$end.station.longitude, ageTeens$end.station.latitude) 
+ageTeensClean$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageTeensClean$start.station.longitude, ageTeensClean$start.station.latitude, ageTeensClean$end.station.longitude, ageTeensClean$end.station.latitude) 
+ageTeensClean <- ageTeensClean[which(ageTeensClean$distance > 0),]
 
-ageYoungAdults$distance <- ageYoungAdults$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageYoungAdults$start.station.longitude, ageYoungAdults$start.station.latitude, ageYoungAdults$end.station.longitude, ageYoungAdults$end.station.latitude) 
+ageYoungAdultsClean$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageYoungAdultsClean$start.station.longitude,ageYoungAdultsClean$start.station.latitude, ageYoungAdultsClean$end.station.longitude, ageYoungAdultsClean$end.station.latitude) 
+ageYoungAdultsClean <- ageYoungAdultsClean[which(ageYoungAdultsClean$distance > 0),]
+summary(ageYoungAdultsClean$distance)
 
-ageAdults$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageAdults$start.station.longitude, ageAdults$start.station.latitude, ageAdults$end.station.longitude, ageAdults$end.station.latitude)
+ageAdultsClean$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageAdultsClean$start.station.longitude, ageAdultsClean$start.station.latitude, ageAdultsClean$end.station.longitude, ageAdultsClean$end.station.latitude) 
+ageAdultsClean <- ageAdultsClean[which(ageAdultsClean$distance > 0),]
 
-ageSeniors$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageSeniors$start.station.longitude, ageSeniors$start.station.latitude, ageSeniors$end.station.longitude, ageSeniors$end.station.latitude)
+ageSeniorsClean$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageSeniorsClean$start.station.longitude, ageSeniorsClean$start.station.latitude, ageSeniorsClean$end.station.longitude, ageSeniorsClean$end.station.latitude) 
+ageSeniorsClean <- ageSeniorsClean[which(ageSeniorsClean$distance > 0),]
 
-boxplot(ageTeens$distance, ageYoungAdults$distance, ageAdults$distance, ageSeniors$distance,  main = "Trip Distance", ylab = "Trip Distance (Meters)", names = c("Teens", "Young Adults", "Adults", "Seniors"), outline = FALSE) 
+boxplot(ageTeensClean$distance, ageYoungAdultsClean$distance, ageAdultsClean$distance, ageSeniorsClean$distance,  main = "Trip Distance", ylab = "Trip Distance (Meters)", names = c("Teens", "Young Adults", "Adults", "Seniors"), outline = FALSE) 
 ``` 
 
 While analyzing the data provided for distance, we noticed that some distances were showing up as 0, even though the time duration was positive. This means that the start location and end location were the same, and it wasn't possible to gauge the distance that the biker had actually traveled. Consequently, we did data cleaning to remove the entries with 0. 
@@ -92,17 +102,17 @@ These boxplots show that the trip distance in meters was the lowest for Teens (w
 
 ```{r}
 #getting average speed of the trip by doing sped = distance (meters) / time (second)
-ageTeens$speed <- ageTeens$distance / ageTeens$tripduration #unit is meters per second
-ageYoungAdults$speed <- ageYoungAdults$distance / ageYoungAdults$tripduration
-ageAdults$speed <- ageAdults$distance / ageAdults$tripduration
-ageSeniors$speed <- ageSeniors$distance / ageSeniors$tripduration
+ageTeensClean$speed <- ageTeensClean$distance / ageTeensClean$tripduration #unit is meters per second
+ageYoungAdultsClean$speed <- ageYoungAdultsClean$distance / ageYoungAdultsClean$tripduration
+ageAdultsClean$speed <- ageAdultsClean$distance / ageAdultsClean$tripduration
+ageSeniorsClean$speed <- ageSeniorsClean$distance / ageSeniorsClean$tripduration
 
-boxplot(ageTeens$speed, ageYoungAdults$speed, ageAdults$speed, ageSeniors$speed,  main = "Trip Speed", ylab = "Speed (meters / second)", names = c("Teens", "Young Adults", "Adults", "Seniors"), outline = FALSE) 
+boxplot(ageTeensClean$speed, ageYoungAdultsClean$speed, ageAdultsClean$speed, ageSeniorsClean$speed,  main = "Trip Speed", ylab = "Speed (meters / second)", names = c("Teens", "Young Adults", "Adults", "Seniors"), outline = FALSE) 
 
-summary(ageTeens$speed)
-summary(ageYoungAdults$speed)
-summary(ageAdults$speed)
-summary(ageSeniors$speed)
+summary(ageTeensClean$speed)
+summary(ageYoungAdultsClean$speed)
+summary(ageAdultsClean$speed)
+summary(ageSeniorsClean$speed)
 ```
 
 The data output revels senior bikers bike at lower speeds than their younger counterparts. Compared to young adults, who were on average biking the fastest out of all the age groups, seniors were biking approximately 0.376 m/s slower. Additionally, young adults are biking at the fastest average speed, which explains why even though they have the highest trip distance, they don't have the highest trip duration.
@@ -114,28 +124,31 @@ genderM <- subset(bikesample, gender == 1)
 genderF <- subset(bikesample, gender == 2)
 
 genderM$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), genderM$start.station.longitude, genderM$start.station.latitude, genderM$end.station.longitude, genderM$end.station.latitude) 
+genderMClean <- genderM[which(genderM$distance > 0),]
 
 genderF$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), genderF$start.station.longitude, genderF$start.station.latitude, genderF$end.station.longitude, genderF$end.station.latitude) 
+genderFClean <- genderM[which(genderF$distance > 0),]
 
-genderM$speed <- genderM$distance / genderM$tripduration
-genderF$speed <- genderF$distance / genderF$tripduration
+genderMClean$speed <- genderMClean$distance / genderMClean$tripduration
+genderFClean$speed <- genderFClean$distance / genderFClean$tripduration
 
-boxplot(genderM$speed, genderF$speed,  main = "Trip Speed by Gender", ylab = "Speed (meters / second)", names = c("Male", "Female"), outline = FALSE) 
+boxplot(genderMClean$speed, genderFClean$speed,  main = "Trip Speed by Gender", ylab = "Speed (meters / second)", names = c("Male", "Female"), outline = FALSE) 
 ```
 
 Delving deeper into the data extracted above, we have created data visualizations showcasing the distances that bikers traveled separated by age, as well as the speeds that bikers traveled at separated by age, both of which can be seen in the plots below. The first plot shows the distances riders travel visually separated by age, and the second plot shows that the speeds riders travel at visually separated by age. Seniors are clearly traveling at lower speeds than young adults. You will be able to use the speed data if you are experiencing bike safety issues to assess if user speed may be an issue, particularly for the teen demographic that goes the fastest.
 
 ```{r}
 bikesample$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), bikesample$start.station.longitude, bikesample$start.station.latitude, bikesample$end.station.longitude, bikesample$end.station.latitude)
+bikesampleClean <- bikesample[which(bikesample$distance > 0),]
 
-bikesample$speed <- bikesample$distance / bikesample$tripduration
+bikesampleClean$speed <- bikesampleClean$distance / bikesampleClean$tripduration
 
-bikesample$ageID <- ifelse(bikesample$age <= 20, 1, ifelse(bikesample$age >= 21 & bikesample$age <= 30, 2, ifelse(bikesample$age >= 31 & bikesample$age <= 60, 3, 4)))
+bikesampleClean$ageID <- ifelse(bikesampleClean$age <= 20, 1, ifelse(bikesampleClean$age >= 21 & bikesampleClean$age <= 30, 2, ifelse(bikesampleClean$age >= 31 & bikesampleClean$age <= 60, 3, 4)))
 
-plot1 <- ggplot() + geom_jitter(aes(y = bikesample$distance, x = bikesample$age, colour = bikesample$ageID), data = bikesample, stat="identity")
+plot1 <- ggplot() + geom_jitter(aes(y = bikesampleClean$distance, x = bikesampleClean$age, colour = bikesampleClean$ageID), data = bikesampleClean, stat="identity")
 plot1
 
-plot2 <- ggplot() + geom_jitter(aes(y = bikesample$speed, x = bikesample$age, colour = bikesample$ageID), data = bikesample, stat="identity")
+plot2 <- ggplot() + geom_jitter(aes(y = bikesampleClean$speed, x = bikesampleClean$age, colour = bikesampleClean$ageID), data = bikesampleClean, stat="identity")
 plot2
 ```
 
