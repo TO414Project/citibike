@@ -116,7 +116,7 @@ genderF$speed <- genderF$distance / genderF$tripduration
 boxplot(genderM$speed, genderF$speed,  main = "Trip Speed by Gender", ylab = "Speed (meters / second)", names = c("Male", "Female"), outline = FALSE) 
 ```
 
-Delving deeper into the data extracted above, we wanted to visually see the distances that bikers traveled separated by age, as well as the speeds that bikers traveled at separated by age, both of which can be seen in the plots below. The first plot shows the distances riders travel visually separated by age, and the second plot shows that the speeds riders travel at visually separated by age. Seniors are clearly traveling at lower speeds than young adults. 
+Delving deeper into the data extracted above, we wanted to visually see the distances that bikers traveled separated by age, as well as the speeds that bikers traveled at separated by age, both of which can be seen in the plots below. The first plot shows the distances riders travel visually separated by age, and the second plot shows that the speeds riders travel at visually separated by age. Seniors are clearly traveling at lower speeds than young adults. Citi bike will be able to use the speed data if they are experiencing bike safety issues to assess if user speed may be an issue, particularly for the teen demographic that goes the fastest.
 
 ```{r}
 bikesample$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), bikesample$start.station.longitude, bikesample$start.station.latitude, bikesample$end.station.longitude, bikesample$end.station.latitude)
@@ -342,6 +342,37 @@ fall= length(which(bikesample$Season=="Fall"))
 
 J = c(fall, winter, spring, summer)
 barplot(J, main="Number of Bikes Used per Season on Average", xlab= "Season",col=c("red","darkblue", "green", "yellow"), ylab="Number of riders", names.arg = c("Fall", "Winter", "Spring", "Summer")) 
+```
+
+In this section, we used the proportion of male:female to figure out where Citi bike could advertise its bikes more. We looked into the top 10% and bottom 10% of stations in terms of male to female ratios. On the map, the red circles represent stations where there are at least 40% female ridership and the blue circles where there at least 80% ridership. In the red circle areas there is some reason women are riding bikes more. Citi bike could take advantage of that fact by doing targetting marketing to try to acquire even more women there. The same could be done for the male dominated stations. 
+
+```{r}
+
+library(ggmap)
+
+x =qmap(location = 'NYC', zoom = 13)
+
+bikesgender = data.frame(bikesample$start.station.id,bikesample$start.station.latitude, bikesample$start.station.longitude, bikesample$gender)
+
+bikesgender$bikesample.gender[bikesgender$bikesample.gender==0] = NA
+bikesgender$bikesample.gender[bikesgender$bikesample.gender==1] = "Male"
+bikesgender$bikesample.gender[bikesgender$bikesample.gender==2] = "Female"
+
+bikesgender_clean = subset(bikesgender, is.na(bikesgender$bikesample.gender) != TRUE)
+bikesgender_clean$count = (bikesgender_clean$bikesample.gender == "Male")
+
+
+count_clean = tapply(bikesgender_clean$count, bikesgender_clean$bikesample.start.station.id, mean)
+
+
+gender_station_male = count_clean[count_clean>0.84]
+y = bikesgender[bikesgender$bikesample.start.station.id %in% names(gender_station_male),]
+
+gender_station_female = count_clean[count_clean<0.60]
+test_stations = bikesgender[bikesgender$bikesample.start.station.id %in% names(gender_station_female),]
+
+mapPoints = x + geom_point(aes(y=bikesample.start.station.latitude, x =bikesample.start.station.longitude), data = y, size= 5, colour = "Blue") + scale_fill_hue(l=70, c=35) + geom_point(aes(y=bikesample.start.station.latitude, x =bikesample.start.station.longitude), data = test_stations, size=5, colour = "Red") + scale_fill_hue(l=70, c=35)
+mapPoints
 ```
 
 #Question 3
