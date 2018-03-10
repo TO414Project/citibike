@@ -55,3 +55,32 @@ barplot(table(maleday$weekday), ylab = "Number of Monthly Male Riders by Day of 
 title("Number of Monthly Citibike Riders by Day")
 # This graph compared to the female graph shows a greater difference from weekday riding versus weekend riding. On the male graph, the gap when looking at Sunday (6000) compared to Monday (10000) is 4000. The difference when looking at the female rider graph at Sunday (2500) compared to Monday (3000) is 500. This reveals the possibility that overall there are more male riders who are choosing bike transportation for commuting as opposed women. Women may be looking into other transportation options. Consequently, Citi Bike may want to consider highlighting more pros of their bike service that appeal to women to help steal share from other transportation options. 
 ```
+```{r}
+#In this section, we used the proportion of male:female to figure out where Citi bike could advertise its bikes more. We looked into the top 10% and bottom 10% of stations in terms of male to female ratios. On the map, the red circles represent stations where there are at least 40% female ridership and the blue circles where there at least 80% ridership. In the red circle areas there is some reason women are riding bikes more. Citi bike could take advantage of that fact by doing targetting marketing to try to acquire even more women there. The same could be done for the male dominated stations. 
+
+library(ggmap)
+
+x =qmap(location = 'NYC', zoom = 13)
+
+bikesgender = data.frame(bikesample$start.station.id,bikesample$start.station.latitude, bikesample$start.station.longitude, bikesample$gender)
+
+bikesgender$bikesample.gender[bikesgender$bikesample.gender==0] = NA
+bikesgender$bikesample.gender[bikesgender$bikesample.gender==1] = "Male"
+bikesgender$bikesample.gender[bikesgender$bikesample.gender==2] = "Female"
+
+bikesgender_clean = subset(bikesgender, is.na(bikesgender$bikesample.gender) != TRUE)
+bikesgender_clean$count = (bikesgender_clean$bikesample.gender == "Male")
+
+
+count_clean = tapply(bikesgender_clean$count, bikesgender_clean$bikesample.start.station.id, mean)
+
+
+gender_station_male = count_clean[count_clean>0.84]
+y = bikesgender[bikesgender$bikesample.start.station.id %in% names(gender_station_male),]
+
+gender_station_female = count_clean[count_clean<0.60]
+test_stations = bikesgender[bikesgender$bikesample.start.station.id %in% names(gender_station_female),]
+
+mapPoints = x + geom_point(aes(y=bikesample.start.station.latitude, x =bikesample.start.station.longitude), data = y, size= 5, colour = "Blue") + scale_fill_hue(l=70, c=35) + geom_point(aes(y=bikesample.start.station.latitude, x =bikesample.start.station.longitude), data = test_stations, size=5, colour = "Red") + scale_fill_hue(l=70, c=35)
+mapPoints
+```
