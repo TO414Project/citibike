@@ -1,5 +1,5 @@
 ---
-title: "Project 1"
+title: "Citi Bike Data Analysis Report"
 author: "TO 414 Group 7 - Dingan Chen, Natasha Desai, Michael Tang, Cassandra Wong, Yan (Lucy) Xie"
 date: "2/17/2018"
 output:
@@ -12,10 +12,6 @@ output:
 ![Citibike at New York City taken by Cassandra Wong ](citibike.jpg)
 
 ```{r}
-#TO DO:
-#1. reword question 3
-#2. reword question 4
-#at the VERY END, put recommendations in
 
 library(tidyverse)
 library(dplyr)
@@ -33,11 +29,11 @@ bikesample <- read.csv("bikesample.csv")
 
 
 
-**Our team at TO414 Consultants Group analyzed CitiBike data from Jan 2016 to Sep 2016.**
-**The following report outlines major bike ridership patterns in respect to several variables, including gender, age groups, seasons, and weather data.**
+**Our team at TO414 Consultants Group analyzed Citi Bike data from Jan 2016 to Sep 2016.**
+**The following report outlines major bike ridership patterns in respect to several variables, including gender, age groups, seasons, and weather data. There are seven parts to this report: (1) Descriptive Statistics, (2) Gender Analysis, (3) Seasonal Ridership Analysis, (4) Age Analysis, (5) Bike Surplus and Shortage Analysis, (6) Weather Analysis, and (7) Summary of Findings**
 
 ## <span style="color:#3d6ece">Descriptive Statistics</span>
-
+**Part One: Descriptive Statistics**
 To start, we have provided some descriptive statistics below to give a general sense of who Citi Bike riders are in terms of **demographic data and ride characteristic data**.
 
 ###<span style="color:#3d6ece">Demographic Data</span>
@@ -88,14 +84,14 @@ ageSeniorsClean <- ageSeniors[which(ageSeniors$tripduration > 0),]
 ```
 
 To develop an even stronger understanding of Citi Bike riders, we separated ages into different groups.
-We have classified *riders 20 years old or under as Teens, riders 21 to 30 years old as Young Adults, riders 31 to 60 as Adults, and riders over 61 and Seniors*.
+We have classified *riders 20 years old or under as teens, riders 21 to 30 years old as young Adults, riders 31 to 60 as adults, and riders over 61 and seniors*.
 We first looked at **how trip duration varied for the different age groups**.
 
 ```{r}
 boxplot(ageTeensClean$tripduration, ageYoungAdultsClean$tripduration, ageAdultsClean$tripduration, ageSeniorsClean$tripduration, main = "Trip Duration", ylab = "Trip Duration (Seconds)", names = c("Teens", "Young Adults", "Adults", "Seniors"), outline=FALSE) 
 ```
 
-These boxplots show that the median trip duration in seconds was the lowest for Teens and the highest for Seniors.From the trip duration finding across different age groups, we decided to compare trip distances for the groups. 
+These boxplots show that the median trip duration in seconds was the lowest for teens and the highest for seniors. From the trip duration finding across different age groups, we decided to compare trip distances for the groups. 
 
 ```{r}
 ageTeensClean$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), ageTeensClean$start.station.longitude, ageTeensClean$start.station.latitude, ageTeensClean$end.station.longitude, ageTeensClean$end.station.latitude) 
@@ -116,7 +112,7 @@ boxplot(ageTeensClean$distance, ageYoungAdultsClean$distance, ageAdultsClean$dis
 
 While analyzing the data provided for distance, we noticed that some distances were showing up as 0, even though the time duration was positive. This means that the start location and end location were the same, and it wasn't possible to gauge the distance that the biker had actually traveled. Consequently, we did data cleaning to remove the entries with 0. 
 
-**These boxplots show that the trip distance in meters was the lowest for Teens (which makes sense as they have the lowest trip duration as well).**
+**These boxplots show that the trip distance in meters was the lowest for teens (which makes sense as they have the lowest trip duration as well).**
 **However, although seniors had the highest trip duration, they have the second lowest trip distance.**
 
 Thus, we have also compared speeds for the different groups. To get speed, we used the speed formula (speed = distance / time).
@@ -135,11 +131,11 @@ summary(ageAdultsClean$speed)
 summary(ageSeniorsClean$speed)
 ```
 
-**The data output revels senior bikers bike at lower speeds than their younger counterparts.**
+**The data output reveals seniors bike at lower speeds than their younger counterparts.**
 **Compared to young adults, who were on average biking the fastest out of all the age groups, seniors were biking approximately 0.376 m/s slower.**
-**Additionally, young adults are biking at the fastest average speed, which explains why even though they have the highest trip distance, they don't have the highest trip duration.**
+**Additionally, young adults are biking at the fastest average speed, which explains why even though they have the highest trip distance, they do not have the highest trip duration.**
 
-We performed the same calculations to see how speed varied between males and females. 
+We performed the same calculations to see how speed varied between males and females. The following boxplot showcases that female riders tend to bike slower than male riders. 
 
 ```{r}
 genderM <- subset(bikesample, gender == 1)
@@ -157,9 +153,9 @@ genderFClean$speed <- genderFClean$distance / genderFClean$tripduration
 boxplot(genderMClean$speed, genderFClean$speed,  main = "Trip Speed by Gender", ylab = "Speed (meters / second)", names = c("Male", "Female"), outline = FALSE) 
 ```
 
-Delving deeper into the data extracted above, we have created data visualizations showcasing the distances that bikers traveled separated by age, as well as the speeds that bikers traveled at separated by age, both of which can be seen in the plots below.
+Delving deeper into the data about age groups, we have created data visualizations showcasing the distances that bikers traveled separated by age, as well as the speeds that bikers traveled at separated by age, both of which can be seen in the plots below.
 **The first plot shows the distances riders travel visually separated by age, and the second plot shows that the speeds riders travel at visually separated by age. Seniors are clearly traveling at lower speeds than young adults.**
-**You will be able to use the speed data if you are experiencing bike safety issues to assess if user speed may be an issue, particularly for the teen demographic that goes the fastest.**
+**Citi Bike will be able to use the speed data if it is experiencing bike safety issues to assess if user speed may be an issue, particularly for the teen demographic that goes the fastest.**
 
 ```{r}
 bikesample$distance <- mapply(function(lon1, lat1, lon2, lat2) distm(c(lon1,lat1), c(lon2, lat2)), bikesample$start.station.longitude, bikesample$start.station.latitude, bikesample$end.station.longitude, bikesample$end.station.latitude)
@@ -176,8 +172,8 @@ plot2 <- ggplot() + geom_jitter(aes(y = bikesampleClean$speed, x = bikesampleCle
 plot2
 ```
 
-Next, we looked at if there were some times where more people of the same age group (ex. teenagers) came out to bike compared to other times of the day.
-These graphs show the different times that Teens, Young Adults, Adults, and Seniors often use CitiBike. 
+Next, we looked at if there were times where more people of the same age group (ex. teenagers) came out to bike compared to other times of the day.
+These graphs show the different times that teens, young adults, adults, and seniors often use Citi Bike. 
 
 ```{r}
 ageTeens$starttime <- as.POSIXlt(ageTeens$starttime, tz = "", "%m/%d/%Y %H:%M:%OS", optional = FALSE)
@@ -268,7 +264,7 @@ grid.arrange(teensPlot, youngAdultsPlot, adultsPlot, seniorsPlot)
 ```
 
 Lastly, we have identified the most popular stations riders went to for either starting or ending their trip for reference.
-**The following map shows the top 20 stations riders go to which are primarily clusters at left-to-center Manhattan area.**
+**The following map shows the top 20 stations riders go to which are primarily clusters at left-to-center Manhattan area.** This data provides insights into where people utilize Citi Bike the most and where congestion is most likely to occur. 
 
 ```{r}
 #Extract the numbers of leaves and arrivals from the data set 
@@ -292,8 +288,8 @@ map1 <- get_googlemap(center = c(lon = -73.989, lat = 40.74), zoom = 13,size = c
 ggmap(map1)+geom_point(data = popular_stations , aes(x = bikesample.start.station.longitude, y = bikesample.start.station.latitude), size = 3, shape = 21,fill="Blue") 
 ```
 
-
-**One of the most daunting findings from the descriptive statistics is the lack of female ridership. We looked into two potential causes: safety and not using the bikes for commuting.**
+**Part 2: Gender Analysis**
+**One of the most daunting findings from the descriptive statistics is the lack of female ridership. We looked into two potential causes: safety and females choosing not to use Citi Bikes for commuting.**
 Below is a chart showcasing the proportion of male to female riders. 
 
 ```{r}
@@ -326,9 +322,9 @@ barplot(table(maletime$startHours), ylab = "Number of Male Rides over an Entire 
 title("Number of Monthly Male Riders by Hour of Departure")
 ```
 
-The peak hours for bike usage by men are the same as women indicating that men are allso using bikes for commuting. Since the bike usage by both genders are so similar with bike usage dropping off for both late into the night, time of the day in regards to safety does not seem to be a major issue for why women are using the bikes less than men. However, safety of riding on busy streets may be a determinant resulting in less women using bikes in the first place. Citi bike may want to look into creating more protected bike lanes along with releasing bike driving statistics about safety to convince more women to try the bikes. 
+The peak hours for bike usage by men are the same as women indicating that men are also using bikes for commuting. Since the bike usage by both genders are so similar with bike usage dropping off for both late into the night, time of day in regards to safety does not seem to be a major issue for why women are using the bikes less than men. However, safety of riding on busy streets may be a determinant resulting in less women choosing to use bikes in the first place. Citi Bike may want to look into creating more protected bike lanes along with releasing bike driving statistics about safety to convince more women to try the bikes. 
 
-Next, we looked into the day of week women tend to use bikes to see if women use the bikes primarily for commuting or for a different reason more on the weekends. 
+Next, we looked into the day of week women tend to use bikes to understand if women use the bikes primarily for commuting or for a different reason resulting in greater bike usage on the weekends. 
 
 ```{r}
 bikesample$startHours <- as.POSIXlt(bikesample$starttime, format = "%m/%d/%Y %H:%M")$hour
@@ -352,36 +348,12 @@ barplot(table(maleday$weekday), ylab = "Number of Monthly Male Riders by Day of 
 title("Number of Monthly Citibike Riders by Day")
 ```
 
-This graph compared to the female graph shows a greater difference from weekday riding versus weekend riding. On the male graph, the gap when looking at Sunday (6000) compared to Monday (10000) is 4000. The difference when looking at the female rider graph at Sunday (2500) compared to Monday (3000) is 500. **This reveals the possibility that overall there are more male riders who are choosing bike transportation for commuting as opposed women. Women may be looking into other transportation options.**
+This graph compared to the female graph shows a greater difference for males from weekday riding versus weekend riding. On the male graph, the gap when looking at Sunday (6000) compared to Monday (10000) is  about 4000. The difference when looking at the female rider graph at Sunday (2500) compared to Monday (3000) is about 500. **This reveals the possibility that overall there are more male riders who are choosing bike transportation for commuting as opposed women. Women may be looking into other transportation options.**
 
 **Consequently, Citi Bike may want to consider highlighting more pros of their bike service that appeal to women to help steal share from other transportation options.**
 
-Additionally, we conducted seasonal analysis for number of riders. It can be seen that winter has the lowest number of bikes used. Since the bikes have already been purchased, unused bikes represent lost revenue.
-**Consequnetly, Citi may want to conisder offering greater promotions in the winter or investing in winter bike wheels to promote which could lead to more people considering bikes a vaiable option even in the colder months.**
-
-**Furthermore, Fall and Summer seem to have greater bike usage so pricing higher in these seasons may help Citi make up for loses in the winter.** 
-
-```{r}
-bikesample$Season<-ifelse(bikesample$Month == 1,"Winter",
-		ifelse(bikesample$Month== 2,"Winter",
-		ifelse(bikesample$Month== 3,"Spring", 
-		ifelse(bikesample$Month== 4,"Spring",
-		ifelse(bikesample$Month== 5,"Spring",
-		ifelse(bikesample$Month== 6,"Summer",
-		ifelse(bikesample$Month== 7,"Summer",
-		ifelse(bikesample$Month== 8,"Summer","Fall"))))))))
-
-spring= length(which(bikesample$Season=="Spring"))/3
-summer= length(which(bikesample$Season=="Summer"))/3
-winter= length(which(bikesample$Season=="Winter"))/2
-fall= length(which(bikesample$Season=="Fall"))
-
-J = c(fall, winter, spring, summer)
-barplot(J, main="Number of Bikes Used per Season on Average", xlab= "Season",col=c("red","darkblue", "green", "yellow"), ylab="Number of riders", names.arg = c("Fall", "Winter", "Spring", "Summer")) 
-```
-
-In this section, we used the proportion of male:female to figure out where Citi bike could advertise its bikes more. We looked into the top 10% and bottom 10% of stations in terms of male to female ratios. On the map, the red circles represent stations where there are at least 40% female ridership and the blue circles where there at least 80% ridership. In the red circle areas there is some reason women are riding bikes more.
-**Citi bike could take advantage of that fact by doing targetting marketing to try to acquire even more women there. The same could be done for the male dominated stations.**
+In the section below, we used the proportion of male:female to figure out where Citi Bike could advertise its bikes more. We looked into the top 10% and bottom 10% of stations in terms of male to female ratios. On the map, the red circles represent stations where there are at least 40% female ridership and the blue circles where there at least 80% ridership. In the red circle areas there is some reason women are riding bikes more.
+**Citi Bike could take advantage of that fact by doing targeting marketing to try to acquire even more women there since other women will see that women already tend to use the bikes a lot in that area. The same could be done for the male dominated stations.**
 
 ```{r}
 x =qmap(location = 'NYC', zoom = 13)
@@ -408,10 +380,36 @@ test_stations = bikesgender[bikesgender$bikesample.start.station.id %in% names(g
 mapPoints = x + geom_point(aes(y=bikesample.start.station.latitude, x =bikesample.start.station.longitude), data = y, size= 5, colour = "Blue") + scale_fill_hue(l=70, c=35) + geom_point(aes(y=bikesample.start.station.latitude, x =bikesample.start.station.longitude), data = test_stations, size=5, colour = "Red") + scale_fill_hue(l=70, c=35)
 mapPoints
 ```
+**Part 3: Seasonal Ridership Analysis**
+Additionally, we conducted seasonal analysis for number of riders. It can be seen that winter has the lowest number of bikes used. Since the bikes have already been purchased, unused bikes represent lost revenue.
+**Consequently, Citi may want to consider offering greater promotions in the winter or investing in winter bike wheels to promote which could lead to more people considering bikes a viable option even in the colder months.**
+
+**Furthermore, Fall and Summer seem to have greater bike usage so pricing higher in these seasons may help Citi make up for loses in the winter.** 
+
+```{r}
+bikesample$Season<-ifelse(bikesample$Month == 1,"Winter",
+		ifelse(bikesample$Month== 2,"Winter",
+		ifelse(bikesample$Month== 3,"Spring", 
+		ifelse(bikesample$Month== 4,"Spring",
+		ifelse(bikesample$Month== 5,"Spring",
+		ifelse(bikesample$Month== 6,"Summer",
+		ifelse(bikesample$Month== 7,"Summer",
+		ifelse(bikesample$Month== 8,"Summer","Fall"))))))))
+
+spring= length(which(bikesample$Season=="Spring"))/3
+summer= length(which(bikesample$Season=="Summer"))/3
+winter= length(which(bikesample$Season=="Winter"))/2
+fall= length(which(bikesample$Season=="Fall"))
+
+J = c(fall, winter, spring, summer)
+barplot(J, main="Number of Bikes Used per Season on Average", xlab= "Season",col=c("red","darkblue", "green", "yellow"), ylab="Number of riders", names.arg = c("Fall", "Winter", "Spring", "Summer")) 
+```
+
+**Part 4: Age Analysis**
 
 In order to provide recommendations for areas to advertise based on demographic age data, we analyzed the median age at each start station.
 
-**Through this analysis, we found that the bike stations in Northern Manhattan and Eastern Brooklyn (shown by the salmon dots) have a high young median age. The majority group of ages 30-40 and 40-50 are spread out everywhere. Additionally, there is not a distinct elderly used station. In total, there is the biggest opportunity to target the youngest demographic that distinctly lies highly in the Northern Manhattan and Eastern Brooklyn area.** 
+**Through this analysis, we found that the bike stations in Northern Manhattan and Eastern Brooklyn (shown by the salmon dots) have a high young median age. The majority group of ages 30-40 and 40-50 are spread out fairly evenly across New York. Additionally, there is not a distinct elderly used station. Consequently, Citi Bike has the biggest opportunity to target the youngest demographic that distinctly lies highly in the Northern Manhattan and Eastern Brooklyn area through advertisements in those areas.** 
 
 ```{r}
 bikesbyage_age = subset(bikesample, is.na(bikesample$age)!= TRUE)
@@ -447,8 +445,8 @@ plotted_map3
 
 
 ##<span style="color:#3d6ece">Asymmetric traffic</span>
-
-In order to figure out the assymetric traffic faced by citibike and make recommendations on bike addition in current satations or new station addition, we are going to look at the level of assymetry in terms of both percentages and absolute values:
+**Part 5: Bike Surplus and Shortage Analysis**
+In order to figure out the asymmetric traffic faced by Citi Bike and make recommendations on bike additions to current stations or new station additions, we are going to look at the level of asymmetry in terms of both percentages and absolute values:
 
 ###<span style="color:#3d6ece">Assymetry in terms of percentages</span>
 ```{r}
@@ -466,17 +464,17 @@ map2 <- get_googlemap(center = c(lon = -73.97, lat = 40.73), zoom = 12,size = c(
 ggmap(map2)+geom_point(data = pct_selected_stations , aes(x = bikesample.start.station.longitude, y = bikesample.start.station.latitude,fill = bike_shortage_ratio), size = 2, shape = 21,show.legend = TRUE) + scale_fill_gradient(low = "#0000FF", high = "#FF0000")
 ```
 
-**The top 30 citibike stations in terms of bike surplus percentage that might need to add more docks are the followings:**
+**The top 30 Citi Bike stations in terms of bike surplus percentage that might need to add more docks are the followings:**
 ```{r}
 print(pct_surplus_stations[,1])
 ```
 
-**The top 30 citibike stations in terms of bike shortage percentage that might need to add more bikes are the followings:**
+**The top 30 Citi Bike stations in terms of bike shortage percentage that might need to add more bikes are the followings:**
 ```{r}
 print(pct_shortage_stations[,1])
 ```
 
-**Areas in upper Manhattan and Brooklyn are demonstating a bike shortage. Those could be areas that citibike company can increase bike capacity to current stations or set up new bike stations in neighbour streets.**
+**Areas in upper Manhattan and Brooklyn are demonstrating a bike shortage. Those could be areas that Citi Bike company increase bike capacity to current stations or set up new bike stations in neighboring streets.**
 
 
 ###<span style="color:#3d6ece">Assymetry in terms of absolute surplus and shortage</span>
@@ -495,13 +493,13 @@ ggmap(map3) + geom_point(aes(x = bikesample.start.station.longitude, y = bikesam
 
 By exploring the absolute surplus and shortage, we figured out the stations that need capacity expansion the most.
 
-**The blue dots show the satations are running a bike surplus and the red dots are in bike shortage. We can see the pattern that people in Manhattan are moving from the edge (especially the right edge) to the center.**
-**We recommend to add bikes to those current stations / set up new bike stations in neighbour streets at the edge of Manhattan and add empty docks at the left-to-center side of Manhattan.**
+**The blue dots show the stations that are running a bike surplus and the red dots are facing a bike shortage. We can see the pattern that people in Manhattan are moving from the edge (especially the right edge) towards the center.**
+**We recommend to add bikes to those current stations / set up new bike stations in neighboring streets at the edge of Manhattan and add empty docks at the left-to-center side of Manhattan.**
 
 
 
 ##<span style="color:#3d6ece">Weather Impacts</span>
-
+**Part 6: Weather Analysis**
 ```{r}
 df_names=c("201601-citibike-tripdata.csv","201602-citibike-tripdata.csv","201603-citibike-tripdata.csv","201604-citibike-tripdata.csv","201605-citibike-tripdata.csv","201606-citibike-tripdata.csv","201607-citibike-tripdata.csv","201608-citibike-tripdata.csv","201609-citibike-tripdata.csv")
 
@@ -556,7 +554,7 @@ library(ggplot2)
 library(dplyr)
 ```
 
-Firstly, we wanted to use the weather data to see if the weather, such as whether it was snowing or raining, impacted each customer group in terms of trip duration and distance. First, we plotted the distribution to see if there was a clear pattern. 
+Firstly, we wanted to use the weather data to see if the weather, such as whether it was snowing or raining, impacted each customer group in terms of trip duration and distance. We plotted the distribution to see if there was a clear pattern. 
 
 ```{r}
 ggplot()+geom_point(aes(x=PRCP,y=tripduration,color='Rain Impact on Customer'),combined_df[combined_df$usertype=='Customer',])+geom_point(aes(x=PRCP,y=tripduration,color='Rain Impact on Subscriber'),combined_df[combined_df$usertype=='Subscriber',])
@@ -564,7 +562,7 @@ ggplot()+geom_point(aes(x=PRCP,y=tripduration,color='Rain Impact on Customer'),c
 ggplot()+geom_point(aes(x=SNOW,y=tripduration,color='Snow Impact on Customer'),combined_df[combined_df$usertype=='Customer',])+geom_point(aes(x=SNOW,y=tripduration,color='Snow Impact on Subscriber'),combined_df[combined_df$usertype=='Subscriber',])
 ```
 
-**These plots show that there is less ridership when it's raining or snowing, which makes snse. However, the weather does not seem to affect trip duration; just the number of rides is affected.**
+**These plots show that there is less ridership when it's raining or snowing, which makes sense. However, the weather does not seem to affect trip duration; just the number of rides is affected.**
 We used a regression to approximate a curve that represents the relationship between riding activity levels and the weather information. 
 
 ```{r}
@@ -589,7 +587,7 @@ newdat_subscriber_PRCP$pred = predict(model_subscriber_PRCP, newdata = newdat_su
 ggplot()+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Customer'),newdat_customer_PRCP)+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Subscriber'),newdat_subscriber_PRCP)
 ```
 
-There is a clear downward trend for both customer groups when it's snowing or raining. Several obvservations can be made:
+There is a clear downward trend for both customer groups when it's snowing or raining. Several observations can be made:
 **1. The customer group has a higher trip duration than the subscriber group, regardless of the rain or snow.**
 **2. The customer group has a steeper slope than the subscriber group, which means that the customer group is more sensitive to weather conditions.**
 
@@ -633,10 +631,10 @@ newdat_Seniors_PRCP$pred = predict(model_Seniors_PRCP, newdata = newdat_Seniors_
 ggplot()+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Teens'),newdat_Teens_PRCP)+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Young Adults'),newdat_Young_Adults_PRCP)+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Middle Aged'),newdat_Middle_Aged_PRCP)+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Seniors'),newdat_Seniors_PRCP)
 ```
 
-**From both graphs, we can observe that the older customer base often ride for longer times, and the Young Adults and Seniors group are more sensitive to snow than Teens and Middle Aged riders.**
-**On the other hand, the Middle Aged, Seniors, and Young Adults are less sensitive than Teens when it comees to rain.**
+**From both graphs, we can observe that the older customer base often ride for longer times, and the young adults and seniors group are more sensitive to snow than teens and middle aged riders.**
+**On the other hand, the middle aged, seniors, and young adults are less sensitive than teens when it comes to rain.**
 
-Next, we took a look at whether tempearture impacted each customer group, in terms of trip duration and distance. 
+Next, we looked into whether temperature impacted each customer group, in terms of trip duration and distance. 
 ```{r}
 model_customer_TMAX <- lm(tripduration ~ poly(TMAX,2), data=combined_df[combined_df$usertype=='Customer',])
 newdat_customer_TMAX = data.frame(TMAX = seq(min(combined_df[combined_df$usertype=='Customer',]$TMAX), max(combined_df[combined_df$usertype=='Customer',]$TMAX), length.out = 300))
@@ -649,9 +647,10 @@ newdat_subscriber_TMAX$pred = predict(model_subscriber_TMAX, newdata = newdat_su
 ggplot()+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Customer'),newdat_customer_TMAX)+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Subscriber'),newdat_subscriber_TMAX)
 ```
 
-In general, as it gets warmer and warmer, people will ride for longer times.
-**On this graph, we observered that the customers group had longer trip durations than the Subscribers group, which matches our observation above.**
+In general, as it gets warmer, people will ride for longer times.
+**On this graph, we observed that the customers group had longer trip durations than the Subscribers group, which matches our observation above.**
 **With this in mind, we thought that a break down by age group might be more useful, which can be seen below.**
+
 
 ```{r}
 model_Teens_TMAX <- lm(tripduration ~ poly(TMAX,2), data=combined_df[which(combined_df$agegroup=='Teens'),])
@@ -673,9 +672,9 @@ newdat_Seniors_TMAX$pred = predict(model_Seniors_TMAX, newdata = newdat_Seniors_
 ggplot()+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Teens'),newdat_Teens_TMAX)+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Young Adults'),newdat_Young_Adults_TMAX)+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Middle Aged'),newdat_Middle_Aged_TMAX)+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Seniors'),newdat_Seniors_TMAX)
 ```
 
-**Across the age groups, people ride more CitiBikes as the temperature gets warmer. However, the ridership peaks at appromiately 75 degress. Temepratures hotter than this causes a negative impact on the ride duration. Seniors still have the highest ride duration, followed by Middle Aged, Young Adults, and Teens.** 
+**Across the age groups, people ride more Citi Bikes as the temperature gets warmer. However, the ridership peaks at appromiately 75 degress. Temepratures hotter than this causes a negative impact on the ride duration. Seniors still have the highest ride duration, followed by middle aged, young adults, and teens.** 
 
-**However, the senior group's peak ridership temperature arrives sooner than Middle Aged, then Young Adults, and Teens. This means the Seniors group has a lower temperature threshold that makes the group ride less because the temperature is too hot. Therefore, the seniors are very sensitive to the temperature change, followed by Middle Aged, Seniors, and Teens.**
+**However, the senior group's peak ridership temperature arrives sooner than middle aged, then young adults, and teens. This means the senior group has a lower temperature tolerance that causes the group to ride less with warmer temperatures. Therefore, the seniors are very sensitive to the temperature change, followed by middle aged, seniors, and teens.**
 
 
 
