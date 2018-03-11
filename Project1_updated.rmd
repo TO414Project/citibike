@@ -154,7 +154,8 @@ boxplot(genderMClean$speed, genderFClean$speed,  main = "Trip Speed by Gender", 
 ```
 
 Delving deeper into the data about age groups, we have created data visualizations showcasing the distances that bikers traveled separated by age, as well as the speeds that bikers traveled at separated by age, both of which can be seen in the plots below.
-**The first plot shows the distances riders travel visually separated by age, and the second plot shows that the speeds riders travel at visually separated by age. Seniors are clearly traveling at lower speeds than young adults.**
+**The first plot shows the distances riders travel visually separated by age, and the second plot shows that the speeds riders travel at visually separated by age. Both of these plots have been modified to limit the y-axes in order to remove a handful of outliers. Seniors are clearly traveling at lower speeds than young adults.**
+
 **Citi Bike will be able to use the speed data if it is experiencing bike safety issues to assess if user speed may be an issue, particularly for the teen demographic that goes the fastest.**
 
 ```{r}
@@ -165,10 +166,10 @@ bikesampleClean$speed <- bikesampleClean$distance / bikesampleClean$tripduration
 
 bikesampleClean$ageID <- ifelse(bikesampleClean$age <= 20, 1, ifelse(bikesampleClean$age >= 21 & bikesampleClean$age <= 30, 2, ifelse(bikesampleClean$age >= 31 & bikesampleClean$age <= 60, 3, 4)))
 
-plot1 <- ggplot() + geom_jitter(aes(y = bikesampleClean$distance, x = bikesampleClean$age, colour = bikesampleClean$ageID), data = bikesampleClean, stat="identity")
+plot1 <- ggplot() + geom_jitter(aes(y = bikesampleClean$distance, x = bikesampleClean$age, colour = bikesampleClean$ageID), data = bikesampleClean, stat="identity") + coord_cartesian(ylim = c(0, 13000))
 plot1
 
-plot2 <- ggplot() + geom_jitter(aes(y = bikesampleClean$speed, x = bikesampleClean$age, colour = bikesampleClean$ageID), data = bikesampleClean, stat="identity")
+plot2 <- ggplot() + geom_jitter(aes(y = bikesampleClean$speed, x = bikesampleClean$age, colour = bikesampleClean$ageID), data = bikesampleClean, stat="identity") + coord_cartesian(ylim = c(0, 10))
 plot2
 ```
 
@@ -695,3 +696,4 @@ ggplot()+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Teens'),newda
 
 5. Citi Bike should set up new bike stations in neighboring streets at the edge of Manhattan and add empty docks at the left-to-center side of Manhattan (More specifics in Part 5: Bike Surplus and Shortage Analysis). 
 
+6. On days when the weather is above 75 degrees, Citi Bike should offer a promotion to customers (single user bike riders, not subscribers) in order to encourage more use of the bikes that typically get less use on hot days. 
