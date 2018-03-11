@@ -30,7 +30,7 @@ bikesample <- read.csv("bikesample.csv")
 
 
 **Our team at TO414 Consultants Group analyzed Citi Bike data from Jan 2016 to Sep 2016.**
-**The following report outlines major bike ridership patterns in respect to several variables, including gender, age groups, seasons, and weather data. There are seven parts to this report: (1) Descriptive Statistics, (2) Gender Analysis, (3) Seasonal Ridership Analysis, (4) Age Analysis, (5) Bike Surplus and Shortage Analysis, (6) Weather Analysis, and (7) Summary of Findings**
+**The following report outlines major bike ridership patterns in respect to several variables, including gender, age groups, seasons, and weather data. There are seven parts to this report: (1) Descriptive Statistics, (2) Gender Analysis, (3) Seasonal Ridership Analysis, (4) Age Analysis, (5) Bike Surplus and Shortage Analysis, (6) Weather Analysis, and (7) Summary of Key Findings**
 
 ## <span style="color:#3d6ece">Descriptive Statistics</span>
 **Part One: Descriptive Statistics**
@@ -353,7 +353,7 @@ This graph compared to the female graph shows a greater difference for males fro
 **Consequently, Citi Bike may want to consider highlighting more pros of their bike service that appeal to women to help steal share from other transportation options.**
 
 In the section below, we used the proportion of male:female to figure out where Citi Bike could advertise its bikes more. We looked into the top 10% and bottom 10% of stations in terms of male to female ratios. On the map, the red circles represent stations where there are at least 40% female ridership and the blue circles where there at least 80% ridership. In the red circle areas there is some reason women are riding bikes more.
-**Citi Bike could take advantage of that fact by doing targeting marketing to try to acquire even more women there since other women will see that women already tend to use the bikes a lot in that area. The same could be done for the male dominated stations.**
+**Citi Bike could take advantage of that fact by doing targeting marketing to try to acquire even more women there since other women will see that women already tend to use the bikes a lot in that area. The same could be done for the male dominated stations. The geographic area to target women is predominantly around the Brooklyn area and for the men is Northern New York with more specific areas identified in the map below.**
 
 ```{r}
 x =qmap(location = 'NYC', zoom = 13)
@@ -672,7 +672,7 @@ newdat_Seniors_TMAX$pred = predict(model_Seniors_TMAX, newdata = newdat_Seniors_
 ggplot()+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Teens'),newdat_Teens_TMAX)+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Young Adults'),newdat_Young_Adults_TMAX)+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Middle Aged'),newdat_Middle_Aged_TMAX)+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Seniors'),newdat_Seniors_TMAX)
 ```
 
-**Across the age groups, people ride more Citi Bikes as the temperature gets warmer. However, the ridership peaks at appromiately 75 degress. Temepratures hotter than this causes a negative impact on the ride duration. Seniors still have the highest ride duration, followed by middle aged, young adults, and teens.** 
+**Across the age groups, people ride more Citi Bikes as the temperature gets warmer. However, the ridership peaks at approximately 75 degrees. Temperatures hotter than this causes a negative impact on the ride duration. Seniors still have the highest ride duration, followed by middle aged, young adults, and teens.** 
 
 **However, the senior group's peak ridership temperature arrives sooner than middle aged, then young adults, and teens. This means the senior group has a lower temperature tolerance that causes the group to ride less with warmer temperatures. Therefore, the seniors are very sensitive to the temperature change, followed by middle aged, seniors, and teens.**
 
@@ -683,8 +683,15 @@ ggplot()+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Teens'),newda
 
 ###<span style="color:#3d6ece">Recommendation 1</span>
 
-<span style="color:#3d6ece">Areas in upper Manhattan and Brooklyn are demonstating a bike shortage. Those could be areas that citibike company can increase bike capacity to current stations or set up new bike stations in neighbour streets.</span>
+**Part 7: Recommendations**
 
-###<span style="color:#3d6ece">Recommendation 2</span>
-<span style="color:#3d6ece">By exploring the absolute surplus and shortage, we figured out the stations that need capacity expansion the most. The blue dots show the satations are running a bike surplus and the red dots are in bike shortage. We can see the pattern that people in Manhattan are moving from the edge (especially the right edge) to the center. We recommend to add bikes to those current stations OR set up new bike stations in neighbour streets at the edge of Manhattan and add empty docks at the left-to-center side of Manhattan.</span>
+1. Citi Bike should highlight more pros of their bike service that appeal to women to help steal share from other transportation options since our data analysis indicates a lot less women choosing bikes for commuting compared to men. Furthermore, Citi Bike should look into creating more protected bike lanes along with releasing positive bike driving statistics about safety to convince more women to try bikes since a 2015 study from New York University’s Rudin Center for Transportation found that women find biking in urban streets risky in terms of safety.
+
+2. Citi Bike should conduct targeted marketing to women around stations where there was a higher balance between male to female riders. Since women are already choosing to ride bikes more at those areas, there is a greater chance of other women seeing women are opting to bike transportation and give it a try. The same could be done for the male dominated stations. The geographic area to target women is predominantly around the Brooklyn area and for men is Northern New York with more specific areas identified in the map created in Part 3: Gender Analysis. 
+
+3. Based on the Seasonal Ridership Analysis, Citi should consider offering greater promotions in the winter or investing in winter bike wheels to advertise which could lead to more people considering bikes a viable option even in the colder months. Furthermore, Fall and Summer seem to have greater bike usage so pricing higher in these seasons may help Citi make up for loses in the winter. Citi Bike would need to adjust their current pricing model which is subscription based for regular users to reflect the seasonality aspect of the bikes or could use the seasonal data to price differently just for the non-subscription bike riders. 
+
+4. Citi Bike should target the youngest demographic that distinctly lies highly in Northern Manhattan and Eastern Brooklyn area through advertisements in those areas (Seen in the map of Part 4: Age Analysis). 
+
+5. Citi Bike should set up new bike stations in neighboring streets at the edge of Manhattan and add empty docks at the left-to-center side of Manhattan (More specifics in Part 5: Bike Surplus and Shortage Analysis). 
 
