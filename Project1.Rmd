@@ -8,6 +8,11 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+#TO DO:
+#1. reword question 3
+#2. reword question 4
+#at the VERY END, put recommendations in
+
 library(tidyverse)
 library(dplyr)
 library(rwunderground)
@@ -17,15 +22,18 @@ library(chron)
 library(ggplot2)
 library(ggthemes)
 library(gridExtra)
+library(ggmap)
 
 bikesample <- read.csv("Sample_Citibike_Data.csv")
 ```
 
 Our team at TO414 Consultants Group analyzed CitiBike data from Jan 2016 to Sep 2016. The following report outlines major bike ridership patterns in respect to several variables, including gender, age groups, seasons, and weather data. 
 
+##Descriptive Statistics
+
 To start, we have provided some descriptive statistics below to give a general sense of who Citi Bike riders are in terms of demographic data and ride characteristic data.
 
-Demographic Data: 
+###Demographic Data: 
 ```{r}
 malecount= length(which(bikesample$gender==1)) #number of male riders
 femalecount= length(which(bikesample$gender==2)) #number of female riders
@@ -39,8 +47,7 @@ bikesample$age <- 2016-bikesample$birth.year
 summary(bikesample$age)
 ```
 
-Ride Characteristic Data: 
-
+###Ride Characteristic Data: 
 ```{r}
 #tripduration
 bikesample$minutes <- bikesample$tripduration / 60
@@ -244,8 +251,6 @@ grid.arrange(teensPlot, youngAdultsPlot, adultsPlot, seniorsPlot)
 
 Lastly, we have identified the most popular stations riders went to for either starting or ending their trip for reference. The following map shows the top 20 stations riders go to which are primarily clusters at left-to-center Manhattan area.
 
-
-
 The top 20 popular citibike stations:
 ```{r}
 #Extract the numbers of leaves and arrivals from the data set 
@@ -271,7 +276,8 @@ ggmap(map1)+geom_point(data = popular_stations , aes(x = bikesample.start.statio
 
 One of the most daunting findings from the descriptive statistics is the lack of female ridership. We looked into two potential causes: safety and not using the bikes for commuting. 
 
-Below is a Pie Chart showcasing the proportion of male to female riders. 
+Below is a chart showcasing the proportion of male to female riders. 
+
 ```{r}
 malecount= length(which(bikesample$gender==1)) #number of male riders
 femalecount= length(which(bikesample$gender==2)) #number of female riders
@@ -293,7 +299,7 @@ barplot(table(femaletime$startHours), ylab = "Number of Female Rides over an Ent
 title("Number of Monthly Female Riders by Hour of Departure")
 ```
 
-The peak hours of bike usage by women are 8:00 AM and 5:00-6:00 PM indicating that women seem to be using the bikes of commuting. 
+The peak hours of bike usage by women are 8:00 AM and 5:00-6:00 PM, indicating that women seem to be using the bikes of commuting. 
 
 ```{r}
 maletime=  subset(bikesample, gender == 1)
@@ -307,7 +313,12 @@ The peak hours for bike usage by men are the same as women indicating that men a
 Next, we looked into the day of week women tend to use bikes to see if women use the bikes primarily for commuting or for a different reason more on the weekends. 
 
 ```{r}
-bikesample$weekday <- weekdays(as.Date(bikes$date))
+bikesample$startHours <- as.POSIXlt(bikesample$starttime, format = "%m/%d/%Y %H:%M")$hour
+bikesample$date <- as.Date(bikesample$starttime, "%m/%d/%Y %H:%M")
+bikesample$weekday <- weekdays(as.Date(bikesample$date))
+bikesample$Month <- format(bikesample$date,"%m")
+bikesample$Month = as.numeric(as.character(bikesample$Month))
+bikesample$weekday <- weekdays(as.Date(bikesample$date, "%m/%d/%y"))
 bikesample$weekday <- ordered(bikesample$weekday, levels = c("Sunday","Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
 femaleday= subset(bikesample, gender==2)
 barplot(table(femaleday$weekday), ylab = "Number of Monthly Female Riders by Day of Week", xlab ="Day", col= "pink")
@@ -329,11 +340,6 @@ Consequently, Citi Bike may want to consider highlighting more pros of their bik
 Additionally, we conducted seasonal analysis for number of riders. It can be seen that winter has the lowest number of bikes used. Since the the bikes have already been purchased, unused bikes represent lost revenue. Consequnetly, Citi may want to conisder offering greater promotions in the winter or investing in winter bike wheels to promote which could lead to more people considering bikes a vaiable option even in the colder months. Furthermore, Fall and Summer seem to have greater bike usage so pricing higher in these seasons may help Citi make up for loses in the winter. 
 
 ```{r}
-bikesample$startHours <- as.POSIXlt(bikesample$starttime, format = "%m/%d/%Y %H:%M")$hour
-bikesample$date <- as.Date(bikesample$starttime, "%m/%d/%Y %H:%M")
-bikesample$weekday <- weekdays(as.Date(bikesample$date))
-bikesample$Month <- format(bikesample$date,"%m")
-bikesample$Month = as.numeric(as.character(bikesample$Month))
 bikesample$Season<-ifelse(bikesample$Month == 1,"Winter",
 		ifelse(bikesample$Month== 2,"Winter",
 		ifelse(bikesample$Month== 3,"Spring", 
@@ -423,11 +429,9 @@ plotted_map3
 
 ```
 
-#Question 3
+##Asymmetric traffic
 
-Assymetric Traffic: Stations running out of bikes because of assymetric traffic (arrivals and departures are not equal) is a big problem. Client would want to know which stations are candidates for increasing bike storage capacity. Client would like to see these stations on a map based visualization.
-
-#In order to figure out the assymetric traffic faced by citibike and make recommendations on bike addition in current satations or new station addition, we are going to look at the level of assymetry in terms of both percentages and absolute values:
+In order to figure out the assymetric traffic faced by citibike and make recommendations on bike addition in current satations or new station addition, we are going to look at the level of assymetry in terms of both percentages and absolute values:
 
 a) assymetry in terms of percentages
 ```{r}
@@ -444,15 +448,16 @@ pct_selected_stations <- rbind(pct_surplus_stations,pct_shortage_stations)
 map2 <- get_googlemap(center = c(lon = -73.97, lat = 40.73), zoom = 12,size = c(640, 640))
 ggmap(map2)+geom_point(data = pct_selected_stations , aes(x = bikesample.start.station.longitude, y = bikesample.start.station.latitude,fill = bike_shortage_ratio), size = 2, shape = 21,show.legend = TRUE) + scale_fill_gradient(low = "#0000FF", high = "#FF0000")
 ```
+
 The top 30 citibike stations in terms of bike surplus percentage that might need to add more docks are the followings:
 ```{r}
 print(pct_surplus_stations[,1])
 ```
+
 The top 30 citibike stations in terms of bike shortage percentage that might need to add more bikes are the followings:
 ```{r}
 print(pct_shortage_stations[,1])
 ```
-#Conlcusion and recommendation: #Areas in upper Manhattan and Brooklyn are demonstating a bike shortage. Those could be areas that citibike company can increase bike capacity to current stations or set up new bike stations in neighbour streets.
 
 b) assymetry in terms of absolute surplus and shortage
 ```{r}
@@ -468,12 +473,185 @@ map3 <- get_googlemap(center = c(lon = -73.97, lat = 40.73), zoom = 12,size = c(
 ggmap(map3) + geom_point(aes(x = bikesample.start.station.longitude, y = bikesample.start.station.latitude), colour = ifelse(abs_selected_stations$Surplus=="Surplus",'navyblue','red3'), data = abs_selected_stations, size = 3,alpha = .5, show.legend = FALSE)
 ```
 
-#Conlcusion and recommendation: #By exploring the absolute surplus and shortage, we figured out the stations that need capacity expansion the most. #The blue dots show the satations are running a bike surplus and the red dots are in bike shortage. We can see the pattern that people in Manhattan are moving from the edge (especially the right edge) to the center. #We recommend to add bikes to those current stations / set up new bike stations in neighbour streets at the edge of Manhattan and add empty docks at the left-to-center side of Manhattan.
+##Weather Impacts
 
-
-#Question 4
-
-Impact of Weather. Client wants to know the impact of weather (temperature, rain, snow, wind) on the CitiBike system. 
 ```{r}
-#linear regression, tempearture as y, behavior as x
+df_names=c("201601-citibike-tripdata.csv","201602-citibike-tripdata.csv","201603-citibike-tripdata.csv","201604-citibike-tripdata.csv","201605-citibike-tripdata.csv","201606-citibike-tripdata.csv","201607-citibike-tripdata.csv","201608-citibike-tripdata.csv","201609-citibike-tripdata.csv")
+
+ride = data.frame()
+
+for (i in df_names){
+  ride = rbind(ride,read.csv(i))
+}
+
+weather=read.csv('weather_data.csv')
 ```
+
+```{r}
+####Extract features #####A new column called distance is generated by calculating the straight-line distance between the coordinates of the starting station and ending station. Rider gender is converted and formatted as a factor, withe levels including unkown, male, female. Therer is also an age column, generated by substrating the user's birth year from 2016. Users are seperated to four age groups (020:Teens, 2040:Young Adult, 40~60:Middle-Aged, and above 60:Seniors). Rows containing N/A are removed, and tripduration longer than 24 hours is ignored because the data might be an outlier.
+
+ride$distance <- distHaversine(ride[ ,c("start.station.longitude", "start.station.latitude")],ride[ ,c("end.station.longitude", "end.station.latitude")])
+ride$gender=factor(ride$gender,levels=c(0,1,2),labels=c("Unkown","Male","Female"))
+ride$date=factor(format(strptime(ride$starttime,format = "%m/%d/%Y %H:%M"),"%m/%d/%Y"))
+ride$age=2016-ride$birth.year
+ride$agegroup=cut(ride$age, 
+                       breaks = c(-Inf, 20, 30, 60,Inf), 
+                       labels = c("Teens", "Young_Adults", "Middle_Aged", "Seniors"), 
+                       right = FALSE)
+
+ride$birth.year=NULL
+ride$starttime=NULL
+ride$stoptime=NULL
+ride$start.station.latitude=NULL
+ride$end.station.latitude=NULL
+ride$start.station.longitude=NULL
+ride$end.station.longitude=NULL
+ride$start.station.id=NULL
+ride$end.station.id=NULL
+ride$bikeid=NULL
+ride$DATE=ride$date
+ride$date=NULL
+
+weather$STATION=NULL
+weather$STATION_NAME=NULL
+weather$DATE=factor(format(strptime(weather$DATE,format = "%Y%m%d"),"%m/%d/%Y"))
+
+ride=ride[ride$tripduration<86400,]
+
+na.omit(weather)
+na.omit(ride)
+
+#Merge the bike dataframe with the weather dataframe, so each row of the ride information will have weather infomation for that date 
+#Used the R merge function to do a left join
+
+combined_df=merge(x = ride, y = weather, by = "DATE", all.x = TRUE)
+library(ggplot2)
+library(dplyr)
+```
+
+Firstly, we wanted to use the weather data to see if the weather, such as whether it was snowing or raining, impacted each customer group in terms of trip duration and distance. First, we plotted the distribution to see if there was a clear pattern. 
+
+```{r}
+ggplot()+geom_point(aes(x=PRCP,y=tripduration,color='Rain Impact on Customer'),combined_df[combined_df$usertype=='Customer',])+geom_point(aes(x=PRCP,y=tripduration,color='Rain Impact on Subscriber'),combined_df[combined_df$usertype=='Subscriber',])
+
+ggplot()+geom_point(aes(x=SNOW,y=tripduration,color='Snow Impact on Customer'),combined_df[combined_df$usertype=='Customer',])+geom_point(aes(x=SNOW,y=tripduration,color='Snow Impact on Subscriber'),combined_df[combined_df$usertype=='Subscriber',])
+```
+
+These plots show that there is less ridership when it's raining or snowing, which makes snse. However, the weather does not seem to affect trip duration; just the number of rides is affected. We used a regression to approximate a curve that represents the relationship between riding activity levels and the weather information. 
+
+```{r}
+model_customer_snow <- lm(tripduration ~ poly(SNOW,1), data=combined_df[combined_df$usertype=='Customer',])
+newdat_customer_snow = data.frame(SNOW = seq(min(combined_df[combined_df$usertype=='Customer',]$SNOW), max(combined_df[combined_df$usertype=='Customer',]$SNOW), length.out = 300))
+newdat_customer_snow$pred = predict(model_customer_snow, newdata = newdat_customer_snow)
+
+model_subscriber_snow <- lm(tripduration ~ poly(SNOW,1), data=combined_df[combined_df$usertype=='Subscriber',])
+newdat_subscriber_snow = data.frame(SNOW = seq(min(combined_df[combined_df$usertype=='Subscriber',]$SNOW), max(combined_df[combined_df$usertype=='Subscriber',]$SNOW), length.out = 300))
+newdat_subscriber_snow$pred = predict(model_subscriber_snow, newdata = newdat_subscriber_snow)
+
+ggplot()+geom_point(aes(x=SNOW,y=pred,color='Snow Impact on Customer'),newdat_customer_snow)+geom_point(aes(x=SNOW,y=pred,color='Snow Impact on Subscriber'),newdat_subscriber_snow)
+
+model_customer_PRCP <- lm(tripduration ~ poly(PRCP,1), data=combined_df[combined_df$usertype=='Customer',])
+newdat_customer_PRCP = data.frame(PRCP = seq(min(combined_df[combined_df$usertype=='Customer',]$PRCP), max(combined_df[combined_df$usertype=='Customer',]$PRCP), length.out = 300))
+newdat_customer_PRCP$pred = predict(model_customer_PRCP, newdata = newdat_customer_PRCP)
+
+model_subscriber_PRCP <- lm(tripduration ~ poly(PRCP,1), data=combined_df[combined_df$usertype=='Subscriber',])
+newdat_subscriber_PRCP = data.frame(PRCP = seq(min(combined_df[combined_df$usertype=='Subscriber',]$PRCP), max(combined_df[combined_df$usertype=='Subscriber',]$PRCP), length.out = 300))
+newdat_subscriber_PRCP$pred = predict(model_subscriber_PRCP, newdata = newdat_subscriber_PRCP)
+
+ggplot()+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Customer'),newdat_customer_PRCP)+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Subscriber'),newdat_subscriber_PRCP)
+```
+
+There is a clear downward trend for both customer groups when it's snowing or raining. Several obvservations can be made:
+1. The customer group has a higher trip duration than the subscriber group, regardless of the rain or snow.
+2. The customer group has a steeper slope than the subscriber group, which means that the customer group is more sensitive to weather conditions.
+
+With these observations in mind, we wanted to see if snow or rain impacted age groups in terms of trip durations and distances. 
+
+```{r}
+model_Teens_snow <- lm(tripduration ~ poly(SNOW,1), data=combined_df[which(combined_df$agegroup=='Teens'),])
+newdat_Teens_snow = data.frame(SNOW = seq(min(combined_df[which(combined_df$agegroup=='Teens'),]$SNOW), max(combined_df[which(combined_df$agegroup=='Teens'),]$SNOW), length.out = 300))
+newdat_Teens_snow$pred = predict(model_Teens_snow, newdata = newdat_Teens_snow)
+
+model_Young_Adults_snow <- lm(tripduration ~ poly(SNOW,1), data=combined_df[which(combined_df$agegroup=='Young_Adults'),])
+newdat_Young_Adults_snow = data.frame(SNOW = seq(min(combined_df[which(combined_df$agegroup=='Young_Adults'),]$SNOW), max(combined_df[which(combined_df$agegroup=='Young_Adults'),]$SNOW), length.out = 300))
+newdat_Young_Adults_snow$pred = predict(model_Young_Adults_snow, newdata = newdat_Young_Adults_snow)
+
+model_Middle_Aged_snow <- lm(tripduration ~ poly(SNOW,1), data=combined_df[which(combined_df$agegroup=='Middle_Aged'),])
+newdat_Middle_Aged_snow = data.frame(SNOW = seq(min(combined_df[which(combined_df$agegroup=='Middle_Aged'),]$SNOW), max(combined_df[which(combined_df$agegroup=='Middle_Aged'),]$SNOW), length.out = 300))
+newdat_Middle_Aged_snow$pred = predict(model_Middle_Aged_snow, newdata = newdat_Middle_Aged_snow)
+
+model_Seniors_snow <- lm(tripduration ~ poly(SNOW,1), data=combined_df[which(combined_df$agegroup=='Seniors'),])
+newdat_Seniors_snow = data.frame(SNOW = seq(min(combined_df[which(combined_df$agegroup=='Seniors'),]$SNOW), max(combined_df[which(combined_df$agegroup=='Seniors'),]$SNOW), length.out = 300))
+newdat_Seniors_snow$pred = predict(model_Seniors_snow, newdata = newdat_Seniors_snow)
+
+ggplot()+geom_point(aes(x=SNOW,y=pred,color='Snow Impact on Teens'),newdat_Teens_snow)+geom_point(aes(x=SNOW,y=pred,color='Snow Impact on Young Adult'),newdat_Young_Adults_snow)+geom_point(aes(x=SNOW,y=pred,color='Snow Impact on Middle Aged'),newdat_Middle_Aged_snow)+geom_point(aes(x=SNOW,y=pred,color='Snow Impact on Seniors'),newdat_Seniors_snow)
+
+model_Teens_PRCP <- lm(tripduration ~ poly(PRCP,1), data=combined_df[which(combined_df$agegroup=='Teens'),])
+newdat_Teens_PRCP = data.frame(PRCP = seq(min(combined_df[which(combined_df$agegroup=='Teens'),]$PRCP), max(combined_df[which(combined_df$agegroup=='Teens'),]$PRCP), length.out = 300))
+newdat_Teens_PRCP$pred = predict(model_Teens_PRCP, newdata = newdat_Teens_PRCP)
+
+model_Young_Adults_PRCP <- lm(tripduration ~ poly(PRCP,1), data=combined_df[which(combined_df$agegroup=='Young_Adultss'),])
+newdat_Young_Adults_PRCP = data.frame(PRCP = seq(min(combined_df[which(combined_df$agegroup=='Young_Adults'),]$PRCP), max(combined_df[which(combined_df$agegroup=='Young_Adults'),]$PRCP), length.out = 300))
+newdat_Young_Adults_PRCP$pred = predict(model_Young_Adults_PRCP, newdata = newdat_Young_Adults_PRCP)
+
+model_Middle_Aged_PRCP <- lm(tripduration ~ poly(PRCP,1), data=combined_df[which(combined_df$agegroup=='Middle_Aged'),])
+newdat_Middle_Aged_PRCP = data.frame(PRCP = seq(min(combined_df[which(combined_df$agegroup=='Middle_Aged'),]$PRCP), max(combined_df[which(combined_df$agegroup=='Middle_Aged'),]$PRCP), length.out = 300))
+newdat_Middle_Aged_PRCP$pred = predict(model_Middle_Aged_PRCP, newdata = newdat_Middle_Aged_PRCP)
+
+model_Seniors_PRCP <- lm(tripduration ~ poly(PRCP,1), data=combined_df[which(combined_df$agegroup=='Seniors'),])
+newdat_Seniors_PRCP = data.frame(PRCP = seq(min(combined_df[which(combined_df$agegroup=='Seniors'),]$PRCP), max(combined_df[which(combined_df$agegroup=='Seniors'),]$PRCP), length.out = 300))
+newdat_Seniors_PRCP$pred = predict(model_Seniors_PRCP, newdata = newdat_Seniors_PRCP)
+
+ggplot()+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Teens'),newdat_Teens_PRCP)+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Young Adults'),newdat_Young_Adults_PRCP)+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Middle Aged'),newdat_Middle_Aged_PRCP)+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Seniors'),newdat_Seniors_PRCP)
+```
+
+From both graphs, we can observe that the older customer base often ride for longer times, and the Young Adults and Seniors group are more sensitive to snow than Teens and Middle Aged riders. On the ot\
+her hand, the Middle Aged, Seniors, and Young Adults are less sensitive than Teens when it comees to rain.
+
+Next, we took a look at whether tempearture impacted each customer group, in terms of trip duration and distance. 
+```{r}
+model_customer_TMAX <- lm(tripduration ~ poly(TMAX,2), data=combined_df[combined_df$usertype=='Customer',])
+newdat_customer_TMAX = data.frame(TMAX = seq(min(combined_df[combined_df$usertype=='Customer',]$TMAX), max(combined_df[combined_df$usertype=='Customer',]$TMAX), length.out = 300))
+newdat_customer_TMAX$pred = predict(model_customer_TMAX, newdata = newdat_customer_TMAX)
+
+model_subscriber_TMAX <- lm(tripduration ~ poly(TMAX,2), data=combined_df[combined_df$usertype=='Subscriber',])
+newdat_subscriber_TMAX = data.frame(TMAX = seq(min(combined_df[combined_df$usertype=='Subscriber',]$TMAX), max(combined_df[combined_df$usertype=='Subscriber',]$TMAX), length.out = 300))
+newdat_subscriber_TMAX$pred = predict(model_subscriber_TMAX, newdata = newdat_subscriber_TMAX)
+
+ggplot()+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Customer'),newdat_customer_TMAX)+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Subscriber'),newdat_subscriber_TMAX)
+```
+
+In general, as it gets warmer and warmer, people will ride for longer times. On this graph, we observered that the customers group had longer trip durations than the Subscribers group, which matches our observation above. With this in mind, we thought that a break down by age group might be more useful, which can be seen below. 
+
+```{r}
+model_Teens_TMAX <- lm(tripduration ~ poly(TMAX,2), data=combined_df[which(combined_df$agegroup=='Teens'),])
+newdat_Teens_TMAX = data.frame(TMAX = seq(min(combined_df[which(combined_df$agegroup=='Teens'),]$TMAX), max(combined_df[which(combined_df$agegroup=='Teens'),]$TMAX), length.out = 300))
+newdat_Teens_TMAX$pred = predict(model_Teens_TMAX, newdata = newdat_Teens_TMAX)
+
+model_Young_Adults_TMAX <- lm(tripduration ~ poly(TMAX,2), data=combined_df[which(combined_df$agegroup=='Young_Adults'),])
+newdat_Young_Adults_TMAX = data.frame(TMAX = seq(min(combined_df[which(combined_df$agegroup=='Young_Adults'),]$TMAX), max(combined_df[which(combined_df$agegroup=='Young_Adults'),]$TMAX), length.out = 300))
+newdat_Young_Adults_TMAX$pred = predict(model_Young_Adults_TMAX, newdata = newdat_Young_Adults_TMAX)
+
+model_Middle_Aged_TMAX <- lm(tripduration ~ poly(TMAX,2), data=combined_df[which(combined_df$agegroup=='Middle_Aged'),])
+newdat_Middle_Aged_TMAX = data.frame(TMAX = seq(min(combined_df[which(combined_df$agegroup=='Middle_Aged'),]$TMAX), max(combined_df[which(combined_df$agegroup=='Middle_Aged'),]$TMAX), length.out = 300))
+newdat_Middle_Aged_TMAX$pred = predict(model_Middle_Aged_TMAX, newdata = newdat_Middle_Aged_TMAX)
+
+model_Seniors_TMAX <- lm(tripduration ~ poly(TMAX,2), data=combined_df[which(combined_df$agegroup=='Seniors'),])
+newdat_Seniors_TMAX = data.frame(TMAX = seq(min(combined_df[which(combined_df$agegroup=='Seniors'),]$TMAX), max(combined_df[which(combined_df$agegroup=='Seniors'),]$TMAX), length.out = 300))
+newdat_Seniors_TMAX$pred = predict(model_Seniors_TMAX, newdata = newdat_Seniors_TMAX)
+
+ggplot()+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Teens'),newdat_Teens_TMAX)+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Young Adults'),newdat_Young_Adults_TMAX)+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Middle Aged'),newdat_Middle_Aged_TMAX)+geom_point(aes(x=TMAX,y=pred,color='Temperature Impact on Seniors'),newdat_Seniors_TMAX)
+```
+
+Across the age groups, people ride more CitiBikes as the temperature gets warmer. However, the ridership peaks at appromiately 75 degress. Temepratures hotter than this causes a negative impact on the ride duration. Seniors still have the highest ride duration, followed by Middle Aged, Young Adults, and Teens. 
+
+However, the senior group's peak ridership temperature arrives sooner than Middle Aged, then Young Adults, and Teens. This means the Seniors group has a lower temperature threshold that makes the group ride less because the temperature is too hot. Therefore, the seniors are very sensitive to the temperature change, followed by Middle Aged, Seniors, and Teens.
+
+##Conclusions and Recommendations
+
+###Recommendation 1:
+
+Areas in upper Manhattan and Brooklyn are demonstating a bike shortage. Those could be areas that citibike company can increase bike capacity to current stations or set up new bike stations in neighbour streets.
+
+###Recommendation 2:
+By exploring the absolute surplus and shortage, we figured out the stations that need capacity expansion the most. The blue dots show the satations are running a bike surplus and the red dots are in bike shortage. We can see the pattern that people in Manhattan are moving from the edge (especially the right edge) to the center. We recommend to add bikes to those current stations / set up new bike stations in neighbour streets at the edge of Manhattan and add empty docks at the left-to-center side of Manhattan.
