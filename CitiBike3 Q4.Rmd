@@ -115,7 +115,7 @@ model_Teens_PRCP <- lm(tripduration ~ poly(PRCP,1), data=combined_df[which(combi
 newdat_Teens_PRCP = data.frame(PRCP = seq(min(combined_df[which(combined_df$agegroup=='Teens'),]$PRCP), max(combined_df[which(combined_df$agegroup=='Teens'),]$PRCP), length.out = 300))
 newdat_Teens_PRCP$pred = predict(model_Teens_PRCP, newdata = newdat_Teens_PRCP)
 
-model_Adults_PRCP <- lm(tripduration ~ poly(PRCP,1), data=combined_df[which(combined_df$agegroup==‘Adults’),])
+model_Young_Adults_PRCP <- lm(tripduration ~ poly(PRCP,1), data=combined_df[which(combined_df$agegroup==‘Young_Adults’),])
 newdat_Young_Adults_PRCP = data.frame(PRCP = seq(min(combined_df[which(combined_df$agegroup=='Young_Adults’),]$PRCP), max(combined_df[which(combined_df$agegroup=='Young_Adults’),]$PRCP), length.out = 300))
 newdat_Young_Adults_PRCP$pred = predict(model_Young_Adults_PRCP, newdata = newdat_Young_Adults_PRCP)
 
@@ -127,7 +127,7 @@ model_Seniors_PRCP <- lm(tripduration ~ poly(PRCP,1), data=combined_df[which(com
 newdat_Seniors_PRCP = data.frame(PRCP = seq(min(combined_df[which(combined_df$agegroup=='Seniors'),]$PRCP), max(combined_df[which(combined_df$agegroup=='Seniors'),]$PRCP), length.out = 300))
 newdat_Seniors_PRCP$pred = predict(model_Seniors_PRCP, newdata = newdat_Seniors_PRCP)
 
-ggplot()+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Teens'), newdat_Teens_PRCP)+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Young Adults’), newdat_Adults_PRCP)+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Adults’), newdat_Adults_PRCP)+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Seniors'),newdat_Seniors_PRCP)
+ggplot()+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Teens'), newdat_Teens_PRCP)+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Young Adults’), newdat_Young_Adults_PRCP)+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Adults’), newdat_Adults_PRCP)+geom_point(aes(x=PRCP,y=pred,color='Rain Impact on Seniors'),newdat_Seniors_PRCP)
 ```
 
 From both graphs, we can observe that the older customer base often ride for longer times, and the Young Professionals and Seniors group are more sensitive to snow than Teens and Middle Aged riders. On the other hand, the Middle Aged, Seniors, and Young Professionals are less sensitive than Teens when it comees to rain.
